@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:flutter/services.dart';
 
 class FlutterAdyen {
-  static const MethodChannel _channel =
-      const MethodChannel('flutter_adyen');
+  static const MethodChannel _channel = const MethodChannel('flutter_adyen');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
+  static Future<String> get openDropIn async {
+    Map<String, dynamic> args = {};
+    args.putIfAbsent('paymentMethods', () => '{}');
+
+    final String response = await _channel.invokeMethod('openDropIn', args);
+    return response;
   }
 }

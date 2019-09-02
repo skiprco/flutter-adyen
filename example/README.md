@@ -1,6 +1,7 @@
-# flutter_adyen_example
+# flutter_adyen
 
-Demonstrates how to use the flutter_adyen plugin.
+Flutter plugin to integrate with the Android and iOS libraries of Adyen.
+
 
 ## Getting Started
 

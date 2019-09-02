@@ -16,10 +16,23 @@ class FlutterAdyenPlugin: MethodCallHandler {
   }
 
   override fun onMethodCall(call: MethodCall, result: Result) {
-    if (call.method == "getPlatformVersion") {
-      result.success("Android ${android.os.Build.VERSION.RELEASE}")
-    } else {
-      result.notImplemented()
+    when (call.method) {
+      "openDropIn" -> {
+//        val paymentMethods = call.argument<String>("paymentMethods")
+//
+//        try {
+//          var gson = Gson()
+//          var jsonObject = gson.toJson(paymentMethods);
+//          val paymentMethodsApiResponse = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
+//
+//          result.success("Adyen:: Success. Response is: $paymentMethodsApiResponse")
+//        } catch (e: Exception) {
+//          result.success("Adyen:: Failed with this error: ${e.printStackTrace()}")
+//        }
+      }
+      else -> {
+        result.notImplemented()
+      }
     }
   }
 }
