@@ -9,6 +9,8 @@ import android.util.Log
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
+import com.adyen.checkout.base.model.payments.response.Action
+import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.core.log.LogUtil
 import com.adyen.checkout.core.log.Logger
 import com.adyen.checkout.core.model.JsonUtils
@@ -18,7 +20,6 @@ import com.adyen.checkout.dropin.service.CallResult
 import com.adyen.checkout.dropin.service.DropInService
 import com.adyen.checkout.googlepay.GooglePayConfiguration
 import com.adyen.checkout.redirect.RedirectComponent
-import com.google.gson.Gson
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import io.flutter.plugin.common.MethodCall
@@ -30,7 +31,6 @@ import okhttp3.MediaType
 import okhttp3.RequestBody
 import org.json.JSONObject
 import java.io.IOException
-
 
 class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : MethodCallHandler {
     companion object {
@@ -45,19 +45,33 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
         when (call.method) {
             "openDropIn" -> {
                 val paymentMethods = call.argument<String>("paymentMethods")
+                val baseUrl = call.argument<String>("baseUrl")
+                val authToken = call.argument<String>("authToken")
+                val merchantAccount = call.argument<String>("merchantAccount")
+                val pubKey = call.argument<String>("pubKey")
 
                 try {
-                    val gson = Gson()
-                    Log.d("LOGGGGGG", gson.toJson(paymentMethods))
                     val jsonObject = JSONObject(paymentMethods)
                     val paymentMethodsApiResponse = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
 
-                    val googlePayConfig = GooglePayConfiguration.Builder(activity, "TestMerchantCheckout").build()
+                    val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount
+                            ?: "").build()
+                    val cardConfiguration = CardConfiguration.Builder(activity, pubKey
+                            ?: "").build()
 
                     val resultIntent = Intent(activity, activity::class.java)
+                    resultIntent.putExtra("BaseUrl", baseUrl)
+                    resultIntent.putExtra("Authorization", authToken)
+
+                    val sharedPref = activity.getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
+                    with(sharedPref.edit()) {
+                        putString("Authorization", "Bearer BULENTANDPATRICKCOMPLAINSALOT")
+                        commit()
+                    }
                     resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
                     val dropInConfiguration = DropInConfiguration.Builder(activity, resultIntent, MyDropInService::class.java)
+                            .addCardConfiguration(cardConfiguration)
                             .addGooglePayConfiguration(googlePayConfig)
                             .build()
 
@@ -86,12 +100,10 @@ class MyDropInService : DropInService() {
     }
 
     override fun makePaymentsCall(paymentComponentData: JSONObject): CallResult {
-        Log.d("LOGGGGGG", "makePaymentsCall")
-        Logger.d(TAG, "makePaymentsCall")
 
-        // Check out the documentation of this method on the parent DropInService class
-
-        Log.d("LOGGGGGG", "paymentComponentData - ${paymentComponentData.toString(JsonUtils.IDENT_SPACES)}")
+        val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
+        Log.d("PREFFSSSSSS", sharedPref.getString("Authorization", "UNDEFINED_STR"))
+        Log.d("PREFFSSSSSS", sharedPref.getString("BaseUrl", "UNDEFINED_STR"))
 
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
 
@@ -106,19 +118,26 @@ class MyDropInService : DropInService() {
 //
         val requestBody = RequestBody.create(MediaType.parse("application/json"), paymentsRequestJson.toString())
 
-        val call = CheckoutApiService.INSTANCE.payments(requestBody)
+        val headers: HashMap<String, String> = HashMap()
+        val call = getService(headers).payments(requestBody)
+        call.request().headers()
         return try {
             val response = call.execute()
             val paymentsResponse = response.body()
+
+            Log.d("LOGGGGGG - 1 ", response.toString())
             // Error body
             val byteArray = response.errorBody()?.bytes()
             if (byteArray != null) {
-                Logger.e(TAG, "errorBody - ${String(byteArray)}")
+                Log.d("LOGGGGGG", "errorBody - ${String(byteArray)}")
             }
+            Log.d("LOGGGGGG", " 4")
             if (response.isSuccessful && paymentsResponse != null) {
-                if (paymentsResponse.paymentData != null) {
-                    CallResult(CallResult.ResultType.ACTION, paymentsResponse.paymentData.toString())
+                Log.d("LOGGGGGG", " 5")
+                if (paymentsResponse.action != null) {
+                    CallResult(CallResult.ResultType.ACTION, Action.SERIALIZER.serialize(paymentsResponse.action).toString())
                 } else {
+                    Log.d("LOGGGGGG", " 7")
                     CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode
                             ?: "EMPTY")
                 }
@@ -137,32 +156,39 @@ class MyDropInService : DropInService() {
 
     override fun makeDetailsCall(actionComponentData: JSONObject): CallResult {
         Log.d("LOGGGGGG", "makeDetailsCall")
-        Logger.d(TAG, "makeDetailsCall")
-//
-//        Logger.v(TAG, "payments/details/ - ${actionComponentData.toString(JsonUtils.IDENT_SPACES)}")
-//
-//        val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
-//        val call = CheckoutApiService.INSTANCE.details(requestBody)
-//
-//        return try {
-//            val response = call.execute()
-//            val detailsResponse = response.body()
-//
-//            if (response.isSuccessful && detailsResponse != null) {
-//                if (detailsResponse.action != null) {
-//                    CallResult(CallResult.ResultType.ACTION, Action.SERIALIZER.serialize(detailsResponse.action).toString())
-//                } else {
-//                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode ?: "EMPTY")
-//                }
-//            } else {
-//                Logger.e(TAG, "FAILED - ${response.message()}")
-//                CallResult(CallResult.ResultType.ERROR, "IOException")
-//            }
-//        } catch (e: IOException) {
-//            Logger.e(TAG, "IOException", e)
-//            CallResult(CallResult.ResultType.ERROR, "IOException")
-//        }
-        return CallResult(CallResult.ResultType.FINISHED, "EMPTY")
+        Log.d("LOGGGGGG", "makeDetailsCall")
+
+        Log.d("LOGGGGGG", "payments/details/ - ${actionComponentData.toString(JsonUtils.IDENT_SPACES)}")
+
+        val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
+        val call = getService(HashMap()).details(requestBody)
+
+        return try {
+            Log.d("LOGGGGGG", "try")
+            val response = call.execute()
+            val detailsResponse = response.body()
+            Log.d("LOGGGGGG", "try 2")
+
+            if (response.isSuccessful && detailsResponse != null) {
+                Log.d("LOGGGGGG", "try 3 ${detailsResponse.resultCode}")
+                Log.d("LOGGGGGG", "try 3 res =  $response")
+                Log.d("LOGGGGGG", "try 3 ${detailsResponse.paymentData}")
+                if (detailsResponse.resultCode != null && detailsResponse.resultCode == "Authorised") {
+                    CallResult(CallResult.ResultType.ACTION, detailsResponse.resultCode)
+                } else {
+                    Log.d("LOGGGGGG", "try 5")
+                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode
+                            ?: "EMPTY")
+                }
+            } else {
+                Log.d("LOGGGGGG", "try 6")
+                Logger.e(TAG, "FAILED - ${response.message()}")
+                CallResult(CallResult.ResultType.ERROR, "IOException")
+            }
+        } catch (e: IOException) {
+            Logger.e(TAG, "IOException", e)
+            CallResult(CallResult.ResultType.ERROR, "IOException")
+        }
     }
 }
 
@@ -183,7 +209,7 @@ fun createPaymentsRequest(context: Context, paymentComponentData: PaymentCompone
 
 
 private fun getAmount(context: Context, preferences: SharedPreferences): Amount {
-    val amountValue = 1
+    val amountValue = 245
     val amountCurrency = "EUR"
     return createAmount(amountValue, amountCurrency)
 }
@@ -211,6 +237,8 @@ data class PaymentsRequest(
 data class AdditionalData(val allow3DS2: String = "false")
 
 private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObject {
+    Log.d("LOGGGGGGG", "serializePaymentsRequest started")
+
     val moshi = Moshi.Builder()
             .add(PolymorphicJsonAdapterFactory.of(PaymentMethodDetails::class.java, PaymentMethodDetails.TYPE)
                     .withSubtype(CardPaymentMethod::class.java, CardPaymentMethod.PAYMENT_METHOD_TYPE)
@@ -228,9 +256,9 @@ private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObje
     val requestString = jsonAdapter.toJson(paymentsRequest)
     val request = JSONObject(requestString)
 
-    // TODO GooglePayPaymentMethod token has a variable name that is not compatible with Moshi
     request.remove("paymentMethod")
     request.put("paymentMethod", PaymentMethodDetails.SERIALIZER.serialize(paymentsRequest.paymentMethod))
 
+    Log.d("LOGGGGGGG", "serializePaymentsRequest done")
     return request
 }
