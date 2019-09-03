@@ -165,13 +165,20 @@ class MyDropInService : DropInService() {
     }
 
     override fun makeDetailsCall(actionComponentData: JSONObject): CallResult {
-        Log.d("LOGGGGGG", "makeDetailsCall")
-        Log.d("LOGGGGGG", "makeDetailsCall")
+
+        val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
+        val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
+        val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
+        val merchantAccount = sharedPref.getString("merchantAccount", "UNDEFINED_STR")
+        val amount = sharedPref.getString("amount", "UNDEFINED_STR")
+        val currency = sharedPref.getString("currency", "UNDEFINED_STR")
 
         Log.d("LOGGGGGG", "payments/details/ - ${actionComponentData.toString(JsonUtils.IDENT_SPACES)}")
 
         val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
-        val call = getService(HashMap()).details(requestBody)
+        val headers: HashMap<String, String> = HashMap()
+        headers["Authorization"] = authorization
+        val call = getService(headers, baseUrl).details(requestBody)
 
         return try {
             Log.d("LOGGGGGG", "try")
