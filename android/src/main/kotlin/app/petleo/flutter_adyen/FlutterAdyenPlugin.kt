@@ -3,8 +3,6 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
-import android.preference.PreferenceManager
 import android.util.Log
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
@@ -49,6 +47,8 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
                 val authToken = call.argument<String>("authToken")
                 val merchantAccount = call.argument<String>("merchantAccount")
                 val pubKey = call.argument<String>("pubKey")
+                val amount = call.argument<String>("amount")
+                val currency = call.argument<String>("currency")
 
                 try {
                     val jsonObject = JSONObject(paymentMethods)
@@ -65,7 +65,11 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
 
                     val sharedPref = activity.getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
                     with(sharedPref.edit()) {
-                        putString("Authorization", "Bearer BULENTANDPATRICKCOMPLAINSALOT")
+                        putString("BaseUrl", baseUrl)
+                        putString("Authorization", authToken)
+                        putString("merchantAccount", merchantAccount)
+                        putString("amount", amount)
+                        putString("currency", currency)
                         commit()
                     }
                     resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -102,8 +106,11 @@ class MyDropInService : DropInService() {
     override fun makePaymentsCall(paymentComponentData: JSONObject): CallResult {
 
         val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
-        Log.d("PREFFSSSSSS", sharedPref.getString("Authorization", "UNDEFINED_STR"))
-        Log.d("PREFFSSSSSS", sharedPref.getString("BaseUrl", "UNDEFINED_STR"))
+        val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
+        val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
+        val merchantAccount = sharedPref.getString("merchantAccount", "UNDEFINED_STR")
+        val amount = sharedPref.getString("amount", "UNDEFINED_STR")
+        val currency = sharedPref.getString("currency", "UNDEFINED_STR")
 
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
 
@@ -111,15 +118,18 @@ class MyDropInService : DropInService() {
             return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
         }
 
-        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData)
+        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount, currency, merchantAccount)
         val paymentsRequestJson = serializePaymentsRequest(paymentsRequest)
-//
+
         Log.d("LOGGGGGG", "payments/ - ${paymentsRequestJson.toString(JsonUtils.IDENT_SPACES)}")
-//
+
         val requestBody = RequestBody.create(MediaType.parse("application/json"), paymentsRequestJson.toString())
 
+        Log.d("LOGGGGG requestBody", paymentsRequestJson.toString())
+
         val headers: HashMap<String, String> = HashMap()
-        val call = getService(headers).payments(requestBody)
+        headers["Authorization"] = authorization
+        val call = getService(headers, baseUrl).payments(requestBody)
         call.request().headers()
         return try {
             val response = call.execute()
@@ -193,26 +203,19 @@ class MyDropInService : DropInService() {
 }
 
 
-fun createPaymentsRequest(context: Context, paymentComponentData: PaymentComponentData<out PaymentMethodDetails>): PaymentsRequest {
-
-    val preferences = PreferenceManager.getDefaultSharedPreferences(context)
-
+fun createPaymentsRequest(context: Context, paymentComponentData: PaymentComponentData<out PaymentMethodDetails>, amount: String, currency: String, merchant: String): PaymentsRequest {
     @Suppress("UsePropertyAccessSyntax")
     return PaymentsRequest(
             paymentComponentData.getPaymentMethod() as PaymentMethodDetails,
             paymentComponentData.getShopperReference() ?: "",
             paymentComponentData.isStorePaymentMethodEnable,
-            getAmount(context, preferences), "IATROSGmbH700ECOM",
+            getAmount(amount, currency), merchant,
             RedirectComponent.getReturnUrl(context)
     )
 }
 
 
-private fun getAmount(context: Context, preferences: SharedPreferences): Amount {
-    val amountValue = 245
-    val amountCurrency = "EUR"
-    return createAmount(amountValue, amountCurrency)
-}
+private fun getAmount(amount: String, currency: String) = createAmount(amount.toInt(), currency)
 
 fun createAmount(value: Int, currency: String): Amount {
     val amount = Amount()

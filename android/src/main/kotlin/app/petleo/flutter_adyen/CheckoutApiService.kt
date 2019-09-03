@@ -40,7 +40,7 @@ class HeaderInterceptor(private val headers: HashMap<String, String>) : Intercep
     }
 }
 
-fun getService(headers: HashMap<String, String>): CheckoutApiService {
+fun getService(headers: HashMap<String, String>, baseUrl: String): CheckoutApiService {
     val moshi = Moshi.Builder()
             .add(PolymorphicJsonAdapterFactory.of(PaymentMethodDetails::class.java, PaymentMethodDetails.TYPE)
                     .withSubtype(CardPaymentMethod::class.java, CardPaymentMethod.PAYMENT_METHOD_TYPE)
@@ -65,7 +65,7 @@ fun getService(headers: HashMap<String, String>): CheckoutApiService {
     val client = OkHttpClient.Builder().addInterceptor(HeaderInterceptor(headers)).build()
 
     val retrofit = Retrofit.Builder()
-            .baseUrl("https://checkout-test.adyen.com/v49/")
+            .baseUrl(baseUrl)
             .addConverterFactory(converter)
             .addCallAdapterFactory(CoroutineCallAdapterFactory())
             .client(client)
