@@ -11,7 +11,6 @@ import com.adyen.checkout.base.model.payments.response.Action
 import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.core.log.LogUtil
 import com.adyen.checkout.core.log.Logger
-import com.adyen.checkout.core.model.JsonUtils
 import com.adyen.checkout.dropin.DropIn
 import com.adyen.checkout.dropin.DropInConfiguration
 import com.adyen.checkout.dropin.service.CallResult
@@ -30,12 +29,15 @@ import okhttp3.RequestBody
 import org.json.JSONObject
 import java.io.IOException
 
-class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : MethodCallHandler {
+class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
+
+    private var result: Result? = null
+
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "flutter_adyen")
-            channel.setMethodCallHandler(FlutterAdyenPlugin(registrar.activity(), channel))
+            channel.setMethodCallHandler(FlutterAdyenPlugin(registrar.activity()))
         }
     }
 
@@ -84,8 +86,7 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
                             .build()
 
                     DropIn.startPayment(activity, paymentMethodsApiResponse, dropInConfiguration)
-
-                    result.success("Adyen:: Success. Response is: $paymentMethodsApiResponse")
+                    this.result = result
                 } catch (e: Throwable) {
                     result.success("Adyen:: Failed with this error: ${e.printStackTrace()}")
                 }
@@ -127,11 +128,7 @@ class MyDropInService : DropInService() {
         val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount, currency, merchantAccount, shopperReference, reference)
         val paymentsRequestJson = serializePaymentsRequest(paymentsRequest)
 
-        Log.d("LOGGGGGG", "payments/ - ${paymentsRequestJson.toString(JsonUtils.IDENT_SPACES)}")
-
         val requestBody = RequestBody.create(MediaType.parse("application/json"), paymentsRequestJson.toString())
-
-        Log.d("LOGGGGG requestBody", paymentsRequestJson.toString())
 
         val headers: HashMap<String, String> = HashMap()
         headers["Authorization"] = authorization
@@ -141,31 +138,17 @@ class MyDropInService : DropInService() {
             val response = call.execute()
             val paymentsResponse = response.body()
 
-            Log.d("LOGGGGGG - 1 ", response.toString())
-            // Error body
-            val byteArray = response.errorBody()?.bytes()
-            if (byteArray != null) {
-                Log.d("LOGGGGGG", "errorBody - ${String(byteArray)}")
-            }
-            Log.d("LOGGGGGG", " 4")
             if (response.isSuccessful && paymentsResponse != null) {
-                Log.d("LOGGGGGG", " 5")
                 if (paymentsResponse.action != null) {
                     CallResult(CallResult.ResultType.ACTION, Action.SERIALIZER.serialize(paymentsResponse.action).toString())
                 } else {
-                    Log.d("LOGGGGGG", " 7")
                     CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode
                             ?: "EMPTY")
                 }
             } else {
-                Log.d("LOGGGGGG", "FAILED - ${response.message()}")
-                Log.d("LOGGGGGG", "FAILED - ${response.errorBody().toString()}")
-                Log.d("LOGGGGGG", "FAILED - ${response.raw().request()}")
-                Logger.e(TAG, "FAILED - ${response.message()}")
                 CallResult(CallResult.ResultType.ERROR, "IOException")
             }
         } catch (e: IOException) {
-            Log.e("LOGGGGGG", e.printStackTrace().toString())
             CallResult(CallResult.ResultType.ERROR, "IOException")
         }
     }
@@ -175,11 +158,6 @@ class MyDropInService : DropInService() {
         val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
         val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
         val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
-        val merchantAccount = sharedPref.getString("merchantAccount", "UNDEFINED_STR")
-        val amount = sharedPref.getString("amount", "UNDEFINED_STR")
-        val currency = sharedPref.getString("currency", "UNDEFINED_STR")
-
-        Log.d("LOGGGGGG", "payments/details/ - ${actionComponentData.toString(JsonUtils.IDENT_SPACES)}")
 
         val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
         val headers: HashMap<String, String> = HashMap()
@@ -187,25 +165,16 @@ class MyDropInService : DropInService() {
         val call = getService(headers, baseUrl).details(requestBody)
 
         return try {
-            Log.d("LOGGGGGG", "try")
             val response = call.execute()
             val detailsResponse = response.body()
-            Log.d("LOGGGGGG", "try 2")
 
             if (response.isSuccessful && detailsResponse != null) {
-                Log.d("LOGGGGGG", "try 3 ${detailsResponse.resultCode}")
-                Log.d("LOGGGGGG", "try 3 res =  $response")
-                Log.d("LOGGGGGG", "try 3 ${detailsResponse.action}")
                 if (detailsResponse.resultCode != null && detailsResponse.resultCode == "Authorised") {
-                    Log.d("LOGGGGGG", "try 4")
                     CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
                 } else {
-                    Log.d("LOGGGGGG", "try 5")
-                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode
-                            ?: "EMPTY")
+                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode ?: "EMPTY")
                 }
             } else {
-                Log.d("LOGGGGGG", "try 6")
                 Logger.e(TAG, "FAILED - ${response.message()}")
                 CallResult(CallResult.ResultType.ERROR, "IOException")
             }
@@ -223,12 +192,12 @@ fun createPaymentsRequest(context: Context, paymentComponentData: PaymentCompone
             paymentComponentData.getPaymentMethod() as PaymentMethodDetails,
             shopperReference ?: "NO_REFERENCE_DEFINED",
             paymentComponentData.isStorePaymentMethodEnable,
-            getAmount(amount, currency), merchant,
+            getAmount(amount, currency),
+            merchant,
             RedirectComponent.getReturnUrl(context),
             reference ?: ""
     )
 }
-
 
 private fun getAmount(amount: String, currency: String) = createAmount(amount.toInt(), currency)
 
