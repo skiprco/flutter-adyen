@@ -65,7 +65,7 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
 
                     val sharedPref = activity.getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
                     with(sharedPref.edit()) {
-                        putString("BaseUrl", baseUrl)
+                        putString("baseUrl", baseUrl)
                         putString("Authorization", authToken)
                         putString("merchantAccount", merchantAccount)
                         putString("amount", amount)

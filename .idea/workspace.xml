@@ -2,6 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a9eb53c8-1d28-4650-8990-2441efc23972" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/CheckoutApiService.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/CheckoutApiService.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/flutter_adyen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/flutter_adyen.dart" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.dart_tool/" />
@@ -25,8 +27,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/lib/flutter_adyen.dart">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="213">
-              <caret line="43" lean-forward="true" selection-start-line="43" selection-end-line="43" />
+            <state relative-caret-position="610">
+              <caret line="48" column="80" selection-start-line="48" selection-start-column="80" selection-end-line="48" selection-end-column="80" />
             </state>
           </provider>
         </entry>
@@ -165,7 +167,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1567428319551</updated>
-      <workItem from="1567431164049" duration="7850000" />
+      <workItem from="1567431164049" duration="8716000" />
     </task>
     <task id="LOCAL-00001" summary="versions">
       <created>1567517526144</created>
@@ -181,15 +183,28 @@
       <option name="project" value="LOCAL" />
       <updated>1567526066245</updated>
     </task>
-    <option name="localTasksCounter" value="3" />
+    <task id="LOCAL-00003" summary="handling amount from dart">
+      <created>1567527551342</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1567527551342</updated>
+    </task>
+    <task id="LOCAL-00004" summary="handling amount from dart">
+      <created>1567527712998</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1567527712998</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="7850000" />
+    <option name="totallyTimeSpent" value="8716000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="UI Designer" />
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24969475" />
@@ -326,8 +341,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/lib/flutter_adyen.dart">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="213">
-          <caret line="43" lean-forward="true" selection-start-line="43" selection-end-line="43" />
+        <state relative-caret-position="610">
+          <caret line="48" column="80" selection-start-line="48" selection-start-column="80" selection-end-line="48" selection-end-column="80" />
         </state>
       </provider>
     </entry>
