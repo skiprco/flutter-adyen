@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adyen/flutter_adyen.dart';
+
+import 'mock_data.dart';
 
 void main() => runApp(MyApp());
 
@@ -44,7 +47,15 @@ class _MyAppState extends State<MyApp> {
           child: Icon(Icons.add),
           onPressed: () async {
             try {
-              dropInResponse = await FlutterAdyen.openDropIn;
+              dropInResponse = await FlutterAdyen.openDropIn(
+                  paymentMethods: jsonEncode(examplePaymentMethods),
+                  baseUrl: 'https://accounts-staging.i-atros.org',
+                  authToken: 'Bearer ABCDEFGHIJKLMNOP', // Authorization header
+                  merchantAccount: 'YOURMERCHANTACCOUNTCOM',
+                  publicKey: pubKey,
+                  amount: '103',
+                  currency: 'EUR'
+              );
             } on PlatformException {
               dropInResponse = 'Failed to get platform version.';
             }
