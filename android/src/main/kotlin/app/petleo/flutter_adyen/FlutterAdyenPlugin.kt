@@ -49,6 +49,8 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
                 val pubKey = call.argument<String>("pubKey")
                 val amount = call.argument<String>("amount")
                 val currency = call.argument<String>("currency")
+                val reference = call.argument<String>("reference")
+                val shopperReference = call.argument<String>("shopperReference")
 
                 try {
                     val jsonObject = JSONObject(paymentMethods)
@@ -70,6 +72,8 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
                         putString("merchantAccount", merchantAccount)
                         putString("amount", amount)
                         putString("currency", currency)
+                        putString("reference", reference)
+                        putString("shopperReference", shopperReference)
                         commit()
                     }
                     resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -111,6 +115,8 @@ class MyDropInService : DropInService() {
         val merchantAccount = sharedPref.getString("merchantAccount", "UNDEFINED_STR")
         val amount = sharedPref.getString("amount", "UNDEFINED_STR")
         val currency = sharedPref.getString("currency", "UNDEFINED_STR")
+        val reference = sharedPref.getString("reference", "UNDEFINED_STR")
+        val shopperReference = sharedPref.getString("shopperReference", "UNDEFINED_STR")
 
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
 
@@ -118,7 +124,7 @@ class MyDropInService : DropInService() {
             return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
         }
 
-        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount, currency, merchantAccount)
+        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount, currency, merchantAccount, shopperReference, reference)
         val paymentsRequestJson = serializePaymentsRequest(paymentsRequest)
 
         Log.d("LOGGGGGG", "payments/ - ${paymentsRequestJson.toString(JsonUtils.IDENT_SPACES)}")
@@ -189,9 +195,10 @@ class MyDropInService : DropInService() {
             if (response.isSuccessful && detailsResponse != null) {
                 Log.d("LOGGGGGG", "try 3 ${detailsResponse.resultCode}")
                 Log.d("LOGGGGGG", "try 3 res =  $response")
-                Log.d("LOGGGGGG", "try 3 ${detailsResponse.paymentData}")
+                Log.d("LOGGGGGG", "try 3 ${detailsResponse.action}")
                 if (detailsResponse.resultCode != null && detailsResponse.resultCode == "Authorised") {
-                    CallResult(CallResult.ResultType.ACTION, detailsResponse.resultCode)
+                    Log.d("LOGGGGGG", "try 4")
+                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
                 } else {
                     Log.d("LOGGGGGG", "try 5")
                     CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode
@@ -210,14 +217,15 @@ class MyDropInService : DropInService() {
 }
 
 
-fun createPaymentsRequest(context: Context, paymentComponentData: PaymentComponentData<out PaymentMethodDetails>, amount: String, currency: String, merchant: String): PaymentsRequest {
+fun createPaymentsRequest(context: Context, paymentComponentData: PaymentComponentData<out PaymentMethodDetails>, amount: String, currency: String, merchant: String, reference: String?, shopperReference: String?): PaymentsRequest {
     @Suppress("UsePropertyAccessSyntax")
     return PaymentsRequest(
             paymentComponentData.getPaymentMethod() as PaymentMethodDetails,
-            paymentComponentData.getShopperReference() ?: "",
+            shopperReference ?: "NO_REFERENCE_DEFINED",
             paymentComponentData.isStorePaymentMethodEnable,
             getAmount(amount, currency), merchant,
-            RedirectComponent.getReturnUrl(context)
+            RedirectComponent.getReturnUrl(context),
+            reference ?: ""
     )
 }
 
@@ -239,7 +247,7 @@ data class PaymentsRequest(
         val merchantAccount: String,
         // unique reference of the payment
         val returnUrl: String,
-        val reference: String = "android-test-components",
+        val reference: String,
         val channel: String = "android",
         val additionalData: AdditionalData = AdditionalData(allow3DS2 = "false")
 )

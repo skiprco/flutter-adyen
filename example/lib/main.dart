@@ -48,13 +48,16 @@ class _MyAppState extends State<MyApp> {
           onPressed: () async {
             try {
               dropInResponse = await FlutterAdyen.openDropIn(
-                  paymentMethods: jsonEncode(examplePaymentMethods),
-                  baseUrl: 'https://accounts-staging.i-atros.org',
-                  authToken: 'Bearer ABCDEFGHIJKLMNOP', // Authorization header
-                  merchantAccount: 'YOURMERCHANTACCOUNTCOM',
-                  publicKey: pubKey,
-                  amount: '103',
-                  currency: 'EUR'
+                paymentMethods: jsonEncode(examplePaymentMethods),
+                baseUrl: 'https://client2.petleo.net/payment/',
+                authToken: 'Bearer 5ae3a87e06564d7b9229bbcc30ebbf73',
+                // Authorization header
+                merchantAccount: 'YOURMERCHANTACCOUNTCOM',
+                publicKey: pubKey,
+                amount: '103',
+                currency: 'EUR',
+                shopperReference: DateTime.now().millisecondsSinceEpoch.toString(),
+                reference: DateTime.now().millisecondsSinceEpoch.toString(),
               );
             } on PlatformException {
               dropInResponse = 'Failed to get platform version.';
