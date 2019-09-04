@@ -60,7 +60,7 @@ class FlutterAdyenPlugin(val activity: Activity, val channel: MethodChannel) : M
                             ?: "").build()
 
                     val resultIntent = Intent(activity, activity::class.java)
-                    resultIntent.putExtra("BaseUrl", baseUrl)
+                    resultIntent.putExtra("baseUrl", baseUrl)
                     resultIntent.putExtra("Authorization", authToken)
 
                     val sharedPref = activity.getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
