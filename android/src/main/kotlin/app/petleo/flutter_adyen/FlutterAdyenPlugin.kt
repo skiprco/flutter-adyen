@@ -3,7 +3,6 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
@@ -29,10 +28,10 @@ import okhttp3.RequestBody
 import org.json.JSONObject
 import java.io.IOException
 
+var result: Result? = null
+var mActivity: Activity? = null
+
 class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
-
-    private var result: Result? = null
-
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
@@ -41,7 +40,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         }
     }
 
-    override fun onMethodCall(call: MethodCall, result: Result) {
+    override fun onMethodCall(call: MethodCall, res: Result) {
         when (call.method) {
             "openDropIn" -> {
                 val paymentMethods = call.argument<String>("paymentMethods")
@@ -86,13 +85,14 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                             .build()
 
                     DropIn.startPayment(activity, paymentMethodsApiResponse, dropInConfiguration)
-                    this.result = result
+                    result = res
+                    mActivity = activity
                 } catch (e: Throwable) {
-                    result.success("Adyen:: Failed with this error: ${e.printStackTrace()}")
+                    res.success("Adyen:: Failed with this error: ${e.printStackTrace()}")
                 }
             }
             else -> {
-                result.notImplemented()
+                res.notImplemented()
             }
         }
     }
@@ -121,9 +121,8 @@ class MyDropInService : DropInService() {
 
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
 
-        if (serializedPaymentComponentData.paymentMethod == null) {
+        if (serializedPaymentComponentData.paymentMethod == null)
             return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
-        }
 
         val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount, currency, merchantAccount, shopperReference, reference)
         val paymentsRequestJson = serializePaymentsRequest(paymentsRequest)
@@ -142,13 +141,16 @@ class MyDropInService : DropInService() {
                 if (paymentsResponse.action != null) {
                     CallResult(CallResult.ResultType.ACTION, Action.SERIALIZER.serialize(paymentsResponse.action).toString())
                 } else {
+                    mActivity?.runOnUiThread { result?.error("Result code is ${response.message()}", "Payment not Authorised", "") }
                     CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode
                             ?: "EMPTY")
                 }
             } else {
+                mActivity?.runOnUiThread { result?.error("FAILED - ${response.message()}", "IOException", "") }
                 CallResult(CallResult.ResultType.ERROR, "IOException")
             }
         } catch (e: IOException) {
+            mActivity?.runOnUiThread { result?.error("FAILED", e.stackTrace.toString(), "") }
             CallResult(CallResult.ResultType.ERROR, "IOException")
         }
     }
@@ -170,15 +172,20 @@ class MyDropInService : DropInService() {
 
             if (response.isSuccessful && detailsResponse != null) {
                 if (detailsResponse.resultCode != null && detailsResponse.resultCode == "Authorised") {
+                    mActivity?.runOnUiThread { result?.success("SUCCESS 2") }
                     CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
                 } else {
-                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode ?: "EMPTY")
+                    mActivity?.runOnUiThread { result?.error("Result code is ${detailsResponse.resultCode}", "Payment not Authorised", "") }
+                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode
+                            ?: "EMPTY")
                 }
             } else {
                 Logger.e(TAG, "FAILED - ${response.message()}")
+                mActivity?.runOnUiThread { result?.error("FAILED - ${response.message()}", "IOException", "") }
                 CallResult(CallResult.ResultType.ERROR, "IOException")
             }
         } catch (e: IOException) {
+            mActivity?.runOnUiThread { result?.error("FAILED", e.stackTrace.toString(), "") }
             Logger.e(TAG, "IOException", e)
             CallResult(CallResult.ResultType.ERROR, "IOException")
         }
@@ -214,7 +221,6 @@ data class PaymentsRequest(
         val storePaymentMethod: Boolean,
         val amount: Amount,
         val merchantAccount: String,
-        // unique reference of the payment
         val returnUrl: String,
         val reference: String,
         val channel: String = "android",
@@ -224,8 +230,6 @@ data class PaymentsRequest(
 data class AdditionalData(val allow3DS2: String = "false")
 
 private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObject {
-    Log.d("LOGGGGGGG", "serializePaymentsRequest started")
-
     val moshi = Moshi.Builder()
             .add(PolymorphicJsonAdapterFactory.of(PaymentMethodDetails::class.java, PaymentMethodDetails.TYPE)
                     .withSubtype(CardPaymentMethod::class.java, CardPaymentMethod.PAYMENT_METHOD_TYPE)
@@ -245,7 +249,5 @@ private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObje
 
     request.remove("paymentMethod")
     request.put("paymentMethod", PaymentMethodDetails.SERIALIZER.serialize(paymentsRequest.paymentMethod))
-
-    Log.d("LOGGGGGGG", "serializePaymentsRequest done")
     return request
 }

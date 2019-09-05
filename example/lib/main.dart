@@ -25,13 +25,7 @@ class _MyAppState extends State<MyApp> {
 
   String dropInResponse;
 
-  // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    // Platform messages may fail, so we use a try/catch PlatformException.
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
     if (!mounted) return;
 
     setState(() {
@@ -50,8 +44,7 @@ class _MyAppState extends State<MyApp> {
               dropInResponse = await FlutterAdyen.openDropIn(
                 paymentMethods: jsonEncode(examplePaymentMethods),
                 baseUrl: 'https://client2.petleo.net/payment/',
-                authToken: 'Bearer 5ae3a87e06564d7b9229bbcc30ebbf73',
-                // Authorization header
+                authToken: 'Bearer 92f5306479474c04b5b187c2fa578bbf',
                 merchantAccount: 'YOURMERCHANTACCOUNTCOM',
                 publicKey: pubKey,
                 amount: '103',
@@ -62,6 +55,9 @@ class _MyAppState extends State<MyApp> {
             } on PlatformException {
               dropInResponse = 'Failed to get platform version.';
             }
+            setState(() {
+              _platformVersion = dropInResponse;
+            });
             setState(() {});
           },
         ),
