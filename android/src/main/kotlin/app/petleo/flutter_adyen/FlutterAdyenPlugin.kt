@@ -217,8 +217,8 @@ fun createAmount(value: Int, currency: String): Amount {
 
 data class PaymentsRequest(
         val paymentMethod: PaymentMethodDetails,
-        val shopperReference: String,
         val storePaymentMethod: Boolean,
+        val shopperReference: String,
         val amount: Amount,
         val merchantAccount: String,
         val returnUrl: String,
