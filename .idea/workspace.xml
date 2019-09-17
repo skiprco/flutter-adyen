@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="a9eb53c8-1d28-4650-8990-2441efc23972" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.dart_tool/" />
     <ignored path="$PROJECT_DIR$/.idea/" />
@@ -24,8 +25,20 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="484">
-              <caret line="227" column="80" lean-forward="true" selection-start-line="227" selection-start-column="80" selection-end-line="227" selection-end-column="80" />
+            <state relative-caret-position="292">
+              <caret line="173" column="32" selection-start-line="173" selection-start-column="27" selection-end-line="173" selection-end-column="32" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/CheckoutApiService.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="255">
+              <caret line="31" column="15" selection-start-line="31" selection-start-column="8" selection-end-line="31" selection-end-column="15" />
+              <folding>
+                <element signature="n#!!doc" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -34,7 +47,7 @@
         <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="585">
-              <caret line="49" column="31" lean-forward="true" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="31" />
+              <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="31" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
@@ -67,6 +80,10 @@
       <find>returnurl</find>
       <find>getReturnUrl</find>
       <find>RedirectComponent</find>
+      <find>response</find>
+      <find>details</find>
+      <find>config</find>
+      <find>succe</find>
     </findStrings>
     <replaceStrings>
       <replace>Adyen</replace>
@@ -92,8 +109,8 @@
         <option value="$PROJECT_DIR$/example/pubspec.lock" />
         <option value="$PROJECT_DIR$/pubspec.yaml" />
         <option value="$PROJECT_DIR$/lib/flutter_adyen.dart" />
-        <option value="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" />
         <option value="$PROJECT_DIR$/example/lib/main.dart" />
+        <option value="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" />
       </list>
     </option>
   </component>
@@ -218,7 +235,7 @@
       <updated>1567428319551</updated>
       <workItem from="1567431164049" duration="18747000" />
       <workItem from="1568465221767" duration="2194000" />
-      <workItem from="1568622825078" duration="3902000" />
+      <workItem from="1568622825078" duration="7113000" />
     </task>
     <task id="LOCAL-00001" summary="versions">
       <created>1567517526144</created>
@@ -273,12 +290,13 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="24843000" />
+    <option name="totallyTimeSpent" value="28054000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="6" />
+    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21733822" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.21733822" />
       <window_info id="Captures" order="1" side_tool="true" />
       <window_info id="Structure" order="2" side_tool="true" />
       <window_info id="Image Layers" order="3" />
@@ -294,7 +312,7 @@
       <window_info anchor="bottom" id="Android Profiler" order="3" show_stripe_button="false" />
       <window_info anchor="bottom" id="Logcat" order="4" />
       <window_info anchor="bottom" id="Debug" order="5" />
-      <window_info active="true" anchor="bottom" id="Terminal" order="6" visible="true" weight="0.32857144" />
+      <window_info anchor="bottom" id="Terminal" order="6" weight="0.32857144" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Flutter Performance" order="8" side_tool="true" />
       <window_info anchor="bottom" id="Version Control" order="9" />
@@ -431,17 +449,27 @@
     <entry file="file://$PROJECT_DIR$/example/lib/main.dart">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="585">
-          <caret line="49" column="31" lean-forward="true" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="31" />
+          <caret line="49" column="31" selection-start-line="49" selection-start-column="31" selection-end-line="49" selection-end-column="31" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/CheckoutApiService.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="255">
+          <caret line="31" column="15" selection-start-line="31" selection-start-column="8" selection-end-line="31" selection-end-column="15" />
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="227" column="80" lean-forward="true" selection-start-line="227" selection-start-column="80" selection-end-line="227" selection-end-column="80" />
+        <state relative-caret-position="292">
+          <caret line="173" column="32" selection-start-line="173" selection-start-column="27" selection-end-line="173" selection-end-column="32" />
         </state>
       </provider>
     </entry>

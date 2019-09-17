@@ -172,7 +172,8 @@ class MyDropInService : DropInService() {
             val detailsResponse = response.body()
 
             if (response.isSuccessful && detailsResponse != null) {
-                if (detailsResponse.resultCode != null && detailsResponse.resultCode == "Authorised") {
+                if (detailsResponse.resultCode != null &&
+                        (detailsResponse.resultCode == "Authorised" || detailsResponse.resultCode == "Received" || detailsResponse.resultCode == "Pending")) {
                     mActivity?.runOnUiThread { result?.success("SUCCESS") }
                     CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
                 } else {
