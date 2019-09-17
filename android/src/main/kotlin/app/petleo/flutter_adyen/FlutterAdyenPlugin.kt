@@ -124,14 +124,15 @@ class MyDropInService : DropInService() {
         if (serializedPaymentComponentData.paymentMethod == null)
             return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
 
-        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount, currency, merchantAccount, shopperReference, reference)
+        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount
+                ?: "", currency ?: "", merchantAccount ?: "", reference, shopperReference)
         val paymentsRequestJson = serializePaymentsRequest(paymentsRequest)
 
         val requestBody = RequestBody.create(MediaType.parse("application/json"), paymentsRequestJson.toString())
 
         val headers: HashMap<String, String> = HashMap()
-        headers["Authorization"] = authorization
-        val call = getService(headers, baseUrl).payments(requestBody)
+        headers["Authorization"] = authorization ?: ""
+        val call = getService(headers, baseUrl ?: "").payments(requestBody)
         call.request().headers()
         return try {
             val response = call.execute()
@@ -163,8 +164,8 @@ class MyDropInService : DropInService() {
 
         val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
         val headers: HashMap<String, String> = HashMap()
-        headers["Authorization"] = authorization
-        val call = getService(headers, baseUrl).details(requestBody)
+        headers["Authorization"] = authorization ?: ""
+        val call = getService(headers, baseUrl ?: "").details(requestBody)
 
         return try {
             val response = call.execute()
@@ -172,7 +173,7 @@ class MyDropInService : DropInService() {
 
             if (response.isSuccessful && detailsResponse != null) {
                 if (detailsResponse.resultCode != null && detailsResponse.resultCode == "Authorised") {
-                    mActivity?.runOnUiThread { result?.success("SUCCESS 2") }
+                    mActivity?.runOnUiThread { result?.success("SUCCESS") }
                     CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
                 } else {
                     mActivity?.runOnUiThread { result?.error("Result code is ${detailsResponse.resultCode}", "Payment not Authorised", "") }
@@ -197,8 +198,8 @@ fun createPaymentsRequest(context: Context, paymentComponentData: PaymentCompone
     @Suppress("UsePropertyAccessSyntax")
     return PaymentsRequest(
             paymentComponentData.getPaymentMethod() as PaymentMethodDetails,
-            shopperReference ?: "NO_REFERENCE_DEFINED",
             paymentComponentData.isStorePaymentMethodEnable,
+            shopperReference ?: "NO_REFERENCE_DEFINED",
             getAmount(amount, currency),
             merchant,
             RedirectComponent.getReturnUrl(context),
