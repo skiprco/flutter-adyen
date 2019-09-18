@@ -88,8 +88,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         
         request.httpBody = jsonData
         URLSession.shared.dataTask(with: request) { data, response, error in
-            print("RESPONSE IS  ", response)
-            print("ERROR IS  ",error)
             if(data != nil) {
                 self.finish(data: data!, component: component)
             }
@@ -98,25 +96,18 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     
     func finish(data: Data, component: DropInComponent) {
         let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? Dictionary<String,Any>
-        print("ACT IS FINSH CALLED  ", paymentResponseJson)
         if ((paymentResponseJson) != nil) {
             let action = paymentResponseJson?!["action"]
-            print("ACTION IS ", action)
             if(action != nil) {
                 let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action, options: .sortedKeys)) as! Action
-                print("ACT IS ", act)
                 if(act != nil){
                     component.handle(act!)
                 }
             } else {
-                print("PAYMENT RESPONSE JSON IS ", paymentResponseJson)
                 let resultCode = try? paymentResponseJson!!["resultCode"] as! String
-                print("RESULT CODE IS ", resultCode)
                 let success = resultCode == "Authorised" || resultCode == "Received" || resultCode == "Pending"
-                print("success IS ", success)
                 component.stopLoading()
                 if (success) {
-                    print("succesSFULL!!!!")
                     self.mResult!("SUCCESS")
                     DispatchQueue.global(qos: .background).async {
                         
@@ -126,7 +117,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                         }
                     }
                 } else {
-                    print("FAIL!!!!")
                     self.mResult!("Failed with result code \(resultCode)")
                     DispatchQueue.global(qos: .background).async {
                         
@@ -142,7 +132,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didProvide(_ data: ActionComponentData, from component: DropInComponent) {
-        print("FUCKING BULENT")
         guard let baseURL = baseURL, let url = URL(string: baseURL + "payments/details/") else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -160,7 +149,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didFail(with error: Error, from component: DropInComponent) {
-        print("FUCKING JUNUS")
         
         //performPayment(with: public  }
     }
@@ -169,12 +157,10 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
 extension UIViewController: PaymentComponentDelegate {
     
     public func didSubmit(_ data: PaymentComponentData, from component: PaymentComponent) {
-        print("FUCKING JULIAN")
         //performPayment(with: public  }
     }
     
     public func didFail(with error: Error, from component: PaymentComponent) {
-        print("FUCKING CERI")
         //performPayment(with: public  }
     }
     
@@ -183,12 +169,10 @@ extension UIViewController: PaymentComponentDelegate {
 extension UIViewController: ActionComponentDelegate {
     
     public func didFail(with error: Error, from component: ActionComponent) {
-        print("FUCKING PATRICK")
         //performPayment(with: public  }
     }
     
     public func didProvide(_ data: ActionComponentData, from component: ActionComponent) {
-        print("FUCKING SHAWKY")
         //performPayment(with: public  }
     }
     
