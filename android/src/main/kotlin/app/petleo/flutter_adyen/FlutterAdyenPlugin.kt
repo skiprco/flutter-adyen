@@ -9,7 +9,6 @@ import com.adyen.checkout.base.model.payments.request.*
 import com.adyen.checkout.base.model.payments.response.Action
 import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.core.log.LogUtil
-import com.adyen.checkout.core.log.Logger
 import com.adyen.checkout.dropin.DropIn
 import com.adyen.checkout.dropin.DropInConfiguration
 import com.adyen.checkout.dropin.service.CallResult
@@ -109,7 +108,6 @@ class MyDropInService : DropInService() {
     }
 
     override fun makePaymentsCall(paymentComponentData: JSONObject): CallResult {
-
         val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
         val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
         val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
@@ -142,9 +140,15 @@ class MyDropInService : DropInService() {
                 if (paymentsResponse.action != null) {
                     CallResult(CallResult.ResultType.ACTION, Action.SERIALIZER.serialize(paymentsResponse.action).toString())
                 } else {
-                    mActivity?.runOnUiThread { result?.error("Result code is ${response.message()}", "Payment not Authorised", "") }
-                    CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode
-                            ?: "EMPTY")
+                    if (paymentsResponse.resultCode != null &&
+                            (paymentsResponse.resultCode == "Authorised" || paymentsResponse.resultCode == "Received" || paymentsResponse.resultCode == "Pending")) {
+                        mActivity?.runOnUiThread { result?.success("SUCCESS") }
+                        CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode)
+                    } else {
+                        mActivity?.runOnUiThread { result?.error("Result code is ${paymentsResponse.resultCode}", "Payment not Authorised", "") }
+                        CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode
+                                ?: "EMPTY")
+                    }
                 }
             } else {
                 mActivity?.runOnUiThread { result?.error("FAILED - ${response.message()}", "IOException", "") }
@@ -157,20 +161,16 @@ class MyDropInService : DropInService() {
     }
 
     override fun makeDetailsCall(actionComponentData: JSONObject): CallResult {
-
         val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
         val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
         val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
-
         val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
         val headers: HashMap<String, String> = HashMap()
         headers["Authorization"] = authorization ?: ""
         val call = getService(headers, baseUrl ?: "").details(requestBody)
-
         return try {
             val response = call.execute()
             val detailsResponse = response.body()
-
             if (response.isSuccessful && detailsResponse != null) {
                 if (detailsResponse.resultCode != null &&
                         (detailsResponse.resultCode == "Authorised" || detailsResponse.resultCode == "Received" || detailsResponse.resultCode == "Pending")) {
@@ -182,13 +182,11 @@ class MyDropInService : DropInService() {
                             ?: "EMPTY")
                 }
             } else {
-                Logger.e(TAG, "FAILED - ${response.message()}")
                 mActivity?.runOnUiThread { result?.error("FAILED - ${response.message()}", "IOException", "") }
                 CallResult(CallResult.ResultType.ERROR, "IOException")
             }
         } catch (e: IOException) {
             mActivity?.runOnUiThread { result?.error("FAILED", e.stackTrace.toString(), "") }
-            Logger.e(TAG, "IOException", e)
             CallResult(CallResult.ResultType.ERROR, "IOException")
         }
     }
