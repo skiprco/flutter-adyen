@@ -151,8 +151,15 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didFail(with error: Error, from component: DropInComponent) {
-        
-        //performPayment(with: public  }
+       self.mResult!("CANCELLED")
+       DispatchQueue.global(qos: .background).async {
+            
+            // Background Thread
+            
+            DispatchQueue.main.async {
+                self.topController?.dismiss(animated: false, completion: nil)
+            }
+        }
     }
 }
 
