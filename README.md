@@ -1,13 +1,18 @@
 # flutter_adyen
 
+Note: This library is not official from Adyen.
+
 Flutter plugin to integrate with the Android and iOS libraries of Adyen.
-This library enables you to open the Drop-in method of Adyen with just calling one function.
+This library enables you to open the **Drop-in** method of Adyen with just calling one function.
 
-## Drop-in method
+[https://docs.adyen.com/checkout/android/drop-in]()
+[https://docs.adyen.com/checkout/ios/drop-in]()
 
-### Prerequisites
+This should support One time payment and recurring payment. 
 
-Before calling the plugin, make sure to get the **payment methods** from Adyen. For this, call the [a /paymentMethods](https://docs.adyen.com/api-explorer/#/PaymentSetupAndVerificationService/v46/paymentMethods) endpoint:
+## Prerequisites
+
+Before calling the plugin, make sure to get the **payment methods** from Adyen or better from your backend. For this, call the [a /paymentMethods](https://docs.adyen.com/api-explorer/#/PaymentSetupAndVerificationService/v46/paymentMethods) endpoint:
 
 
 POST: https://checkout-test.adyen.com/v46/paymentMethods // Version number might be different
@@ -21,24 +26,68 @@ Payload should contain the merchant account
 Append your API key and a content-type to the headers:
 ```
 Content-Type: application/json
-X-API-KEY: AQEohm.......zyMjCt
+X-API-KEY: AQEXXXXXXXXXXXXXXXX
 ```
 
-Make sure to run this command from your backend. It's not recommended to store the API key in the front end!
+It's not recommended to store the API key in the front-end for security reasons!
 
-### Init
-Init the plugin.
+####You also need to have the:
+* publicKey (from Adyen)
+* merchantAccount (from Adyen)
+* amount & currency 
+* shopperReference (e.g userId)
+* reference (e.g transactionId)
+
+##Setup
+
+###Android
+Add this in your android/build.gradle
+
+```implementation "com.adyen.checkout:drop-in:3.2.1"```
+
+And in the AndroidManifest.xml in your application tag add this service, this allows adyen to tell the android app the result of the payment.
 
 ```
-FlutterAdyen.init(
-   baseURL: 'https://pal-test.adyen.com',
-);
+<application ...>
+    ...
+    <service
+           android:name="app.petleo.flutter_adyen.MyDropInService"
+           android:permission="android.permission.BIND_JOB_SERVICE" />
+
+</application>
+``` 
+
+###iOS
+You need to add a URL_SCHEME if you do not have one yet.
+
+[Here is how to add one.](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app)
+
+
+##Usage
+Just add this in your dart code
+```
+ const PAYMENT_SUCCESS = 'SUCCESS';
+ const PAYMENT_CANCELLED = 'CANCELLED';
+ 
+ String dropInResponse = await FlutterAdyen.openDropIn(
+                paymentMethods: jsonEncode(examplePaymentMethods),
+                baseUrl: 'https://YOURBACKEND/payment/',
+                authToken: 'Bearer AAABBBCCCDDD222111',
+                merchantAccount: 'YOURMERCHANTACCOUNTCOM',
+                publicKey: pubKey,
+                amount: '1230',
+                currency: 'EUR',
+                iosReturnUrl: 'YOURAPP://' <-- URL_SCHEME_FOR_YOUR_iOS_APP
+                shopperReference: DateTime.now().millisecondsSinceEpoch.toString(),
+                reference: DateTime.now().millisecondsSinceEpoch.toString(),
+              );
+              
+  if(dropInResponse == 'PAYMENT_SUCCESS') ... 
+  if(dropInResponse == 'PAYMENT_CANCELLED') ...
+  else ... // you will get the error message here. (It is not translated to any languages)
 ```
 
-**baseURL**
-Test account: https://pal-test.adyen.com
-Otherwise, the URL will be specific to your company and provided by Adyen.
-
-### Start payment
-
-Pass the JSON to the plugin as a string.
+### Important to know
+The library expect your backend to provide the following endpoints as documented by Adyen:
+ * https://YOURBACKEND/payment/payments/
+ * https://YOURBACKEND/payment/payments/details/
