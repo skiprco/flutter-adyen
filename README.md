@@ -5,8 +5,8 @@ Note: This library is not official from Adyen.
 Flutter plugin to integrate with the Android and iOS libraries of Adyen.
 This library enables you to open the **Drop-in** method of Adyen with just calling one function.
 
-[https://docs.adyen.com/checkout/android/drop-in]()
-[https://docs.adyen.com/checkout/ios/drop-in]()
+* [Adyen drop-in Android](https://docs.adyen.com/checkout/android/drop-in)
+* [Adyen drop-in iOS](https://docs.adyen.com/checkout/ios/drop-in)
 
 This should support One time payment and recurring payment. 
 
