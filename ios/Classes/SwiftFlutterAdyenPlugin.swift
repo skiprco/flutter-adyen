@@ -19,6 +19,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     var pubKey: String?
     var currency: String?
     var amount: String?
+    var returnUrl: String?
     var shopperReference: String?
     var reference: String?
     var mResult: FlutterResult?
@@ -35,6 +36,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         pubKey = arguments?["pubKey"] as? String
         currency = arguments?["currency"] as? String
         amount = arguments?["amount"] as? String
+        returnUrl = arguments?["iosReturnUrl"] as? String
         shopperReference = arguments?["shopperReference"] as? String
         reference = arguments?["reference"] as? String
         mResult = result
@@ -80,7 +82,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                                    "channel": "iOS",
                                    "merchantAccount": merchantAccount,
                                    "reference": reference,
-                                   "returnUrl": "iatrosPayment://",
+                                   "returnUrl": returnUrl! + "://",
                                    "storePaymentMethod": false,
                                    "additionalData": ["allow3DS2":"false"]]
         
