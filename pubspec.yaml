@@ -1,6 +1,6 @@
 name: flutter_adyen
 description: Flutter plugin to integrate with the Android and iOS libraries of Adyen.
-version: 0.1.4
+version: 0.1.5
 authors: [Junus Ergin <junus.ergin@petleo.net>, Karim Abdo <karim.abdo@petleo.net>, Bulent Hacioglu <buelent.hacioglu@petleo.net>]
 homepage: https://gitlab.com/petleo-and-iatros-opensource/flutter_adyen
 

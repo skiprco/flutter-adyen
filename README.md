@@ -62,6 +62,8 @@ You need to add a URL_SCHEME if you do not have one yet.
 
 [Here is how to add one.](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app)
 
+You might need to run this command `pod update Adyen/Card` in your ios folder.
+
 
 ##Usage
 Just add this in your dart code

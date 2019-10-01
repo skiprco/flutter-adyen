@@ -3,7 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="a9eb53c8-1d28-4650-8990-2441efc23972" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" beforeDir="false" afterPath="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/ios/Podfile.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/ios/Podfile.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/example/pubspec.lock" beforeDir="false" afterPath="$PROJECT_DIR$/example/pubspec.lock" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ios/flutter_adyen.podspec" beforeDir="false" afterPath="$PROJECT_DIR$/ios/flutter_adyen.podspec" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.dart_tool/" />
     <ignored path="$PROJECT_DIR$/.idea/" />
@@ -43,11 +48,23 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ios/flutter_adyen.podspec">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="360">
-              <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+            <state relative-caret-position="300">
+              <caret line="20" selection-start-line="20" selection-end-line="20" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/README.md">
+          <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+            <state split_layout="SPLIT">
+              <first_editor relative-caret-position="98">
+                <caret line="67" column="7" selection-start-line="67" selection-start-column="7" selection-end-line="67" selection-end-column="7" />
+              </first_editor>
+              <second_editor />
             </state>
           </provider>
         </entry>
@@ -102,11 +119,13 @@
       <find>iosReturn</find>
       <find>0.1.2</find>
       <find>0.1.3</find>
+      <find>0.1.4</find>
     </findStrings>
     <replaceStrings>
       <replace>Adyen</replace>
       <replace>0.1.3</replace>
       <replace>0.1.4</replace>
+      <replace>0.1.5</replace>
     </replaceStrings>
     <dirStrings>
       <dir>C:\Dev\iatros\flutteradyen\flutter_adyen</dir>
@@ -132,12 +151,15 @@
         <option value="$PROJECT_DIR$/android/src/main/kotlin/app/petleo/flutter_adyen/FlutterAdyenPlugin.kt" />
         <option value="$PROJECT_DIR$/example/lib/main.dart" />
         <option value="$PROJECT_DIR$/ios/flutter_adyen.podspec" />
+        <option value="$PROJECT_DIR$/README.md" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6" fullScreen="true">
-    <option name="width" value="1280" />
-    <option name="height" value="800" />
+    <option name="x" value="210" />
+    <option name="y" value="131" />
+    <option name="width" value="1260" />
+    <option name="height" value="788" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -198,7 +220,7 @@
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.11173183" />
     <property name="project.structure.side.proportion" value="0.28797764" />
-    <property name="settings.editor.selected.configurable" value="flutter.settings" />
+    <property name="settings.editor.selected.configurable" value="project.propVCSSupport.Mappings" />
     <property name="show.migrate.to.gradle.popup" value="false" />
   </component>
   <component name="RunDashboard">
@@ -229,7 +251,7 @@
       <workItem from="1568725451281" duration="519000" />
       <workItem from="1568728919833" duration="1041000" />
       <workItem from="1568820696243" duration="633000" />
-      <workItem from="1568894182818" duration="616000" />
+      <workItem from="1568894182818" duration="3621000" />
     </task>
     <task id="LOCAL-00001" summary="versions">
       <created>1567517526144</created>
@@ -301,15 +323,21 @@
       <option name="project" value="LOCAL" />
       <updated>1568894421455</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="Credit cards on android">
+      <created>1568896084604</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1568896084604</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="30425000" />
+    <option name="totallyTimeSpent" value="33430000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="0" width="1680" height="1050" extended-state="0" />
-    <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.21733822" />
       <window_info id="Captures" order="1" side_tool="true" />
@@ -362,7 +390,8 @@
     <MESSAGE value="deleted unnecessary prints" />
     <MESSAGE value="Updating README" />
     <MESSAGE value="removing unused files" />
-    <option name="LAST_COMMIT_MESSAGE" value="removing unused files" />
+    <MESSAGE value="Credit cards on android" />
+    <option name="LAST_COMMIT_MESSAGE" value="Credit cards on android" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/android/src/main/FlutterAdyenPlugin.kts" />
@@ -404,19 +433,6 @@
       <provider editor-type-id="text-editor">
         <state relative-caret-position="51">
           <caret line="3" selection-start-line="3" selection-end-line="3" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
-        <state split_layout="SPLIT">
-          <first_editor />
-          <second_editor />
-        </state>
-      </provider>
-      <provider editor-type-id="text-editor">
-        <state relative-caret-position="34">
-          <caret line="2" column="21" selection-start-line="2" selection-end-line="3" />
         </state>
       </provider>
     </entry>
@@ -490,8 +506,23 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/ios/flutter_adyen.podspec">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
-          <caret line="24" lean-forward="true" selection-start-line="24" selection-end-line="24" />
+        <state relative-caret-position="300">
+          <caret line="20" selection-start-line="20" selection-end-line="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/README.md">
+      <provider selected="true" editor-type-id="split-provider[text-editor;markdown-preview-editor]">
+        <state split_layout="SPLIT">
+          <first_editor relative-caret-position="98">
+            <caret line="67" column="7" selection-start-line="67" selection-start-column="7" selection-end-line="67" selection-end-column="7" />
+          </first_editor>
+          <second_editor />
+        </state>
+      </provider>
+      <provider editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="21" selection-start-line="2" selection-end-line="3" />
         </state>
       </provider>
     </entry>
