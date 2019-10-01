@@ -43,7 +43,9 @@ It's not recommended to store the API key in the front-end for security reasons!
 ###Android
 Add this in your android/build.gradle
 
-```implementation "com.adyen.checkout:drop-in:3.2.1"```
+```
+implementation "com.adyen.checkout:drop-in:3.2.1"
+```
 
 And in the AndroidManifest.xml in your application tag add this service, this allows adyen to tell the android app the result of the payment.
 
@@ -56,6 +58,20 @@ And in the AndroidManifest.xml in your application tag add this service, this al
 
 </application>
 ``` 
+
+you also might need to set minifyEnabled & useProguard to false if it crashes on a release build
+
+```  
+
+buildTypes {
+           release {
+               signingConfig signingConfigs.release               
+               minifyEnabled false
+               useProguard false
+               proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+           }
+       }
+```
 
 ###iOS
 You need to add a URL_SCHEME if you do not have one yet.

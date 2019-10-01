@@ -8,7 +8,7 @@ PODS:
     - Adyen/Core
   - Adyen3DS2 (0.9.6)
   - Flutter (1.0.0)
-  - flutter_adyen (0.1.5):
+  - flutter_adyen (0.2.2):
     - Adyen/Card
     - Adyen/Core
     - Adyen/DropIn

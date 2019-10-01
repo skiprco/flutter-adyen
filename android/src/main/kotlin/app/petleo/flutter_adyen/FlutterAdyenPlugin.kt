@@ -55,16 +55,13 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                 try {
                     val jsonObject = JSONObject(paymentMethods)
                     val paymentMethodsApiResponse = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
-
                     val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount
                             ?: "").build()
                     val cardConfiguration = CardConfiguration.Builder(activity, pubKey
                             ?: "").build()
-
                     val resultIntent = Intent(activity, activity::class.java)
                     resultIntent.putExtra("baseUrl", baseUrl)
                     resultIntent.putExtra("Authorization", authToken)
-
                     val sharedPref = activity.getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
                     with(sharedPref.edit()) {
                         putString("baseUrl", baseUrl)
@@ -82,12 +79,11 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                             .addCardConfiguration(cardConfiguration)
                             .addGooglePayConfiguration(googlePayConfig)
                             .build()
-
                     DropIn.startPayment(activity, paymentMethodsApiResponse, dropInConfiguration)
                     result = res
                     mActivity = activity
                 } catch (e: Throwable) {
-                    res.success("Adyen:: Failed with this error: ${e.printStackTrace()}")
+                    res.error("Adyen:: Failed with this error: ", "${e.printStackTrace()}", "")
                 }
             }
             else -> {
