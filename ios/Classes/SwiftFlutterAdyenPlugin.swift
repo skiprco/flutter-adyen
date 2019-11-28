@@ -101,7 +101,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         if ((paymentResponseJson) != nil) {
             let action = paymentResponseJson?!["action"]
             if(action != nil) {
-                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action, options: .sortedKeys)) as! Action
+                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action/*, options: .sortedKeys*/)) as! Action
                 if(act != nil){
                     component.handle(act!)
                 }
