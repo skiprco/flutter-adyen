@@ -30,5 +30,10 @@ var examplePaymentMethods = {
   ]
 };
 
+String baseUrl = 'https://webhook.site/???';
 
 String pubKey = '10001XXXXXXXXXXXXXXXXXXXX';
+
+String merchantAccount = 'MERCHANT_HERE';
+
+

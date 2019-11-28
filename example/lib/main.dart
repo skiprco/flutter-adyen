@@ -43,11 +43,11 @@ class _MyAppState extends State<MyApp> {
             try {
               dropInResponse = await FlutterAdyen.openDropIn(
                 paymentMethods: jsonEncode(examplePaymentMethods),
-                baseUrl: 'https://xxxxxxxxx/payment/',
+                baseUrl: baseUrl,
                 authToken: 'Bearer AAABBBCCCDDD222111',
-                merchantAccount: 'YOURMERCHANTACCOUNTCOM',
+                merchantAccount: merchantAccount,
                 publicKey: pubKey,
-                amount: '1230',
+                amount: '12',
                 currency: 'EUR',
                 shopperReference: DateTime.now().millisecondsSinceEpoch.toString(),
                 reference: DateTime.now().millisecondsSinceEpoch.toString(),
