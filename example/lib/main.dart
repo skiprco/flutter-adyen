@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adyen/flutter_adyen.dart';
+import 'package:flutter_adyen_example/mock_data.dart' as prefix0;
 
 import 'mock_data.dart';
 
@@ -43,14 +44,16 @@ class _MyAppState extends State<MyApp> {
             try {
               dropInResponse = await FlutterAdyen.openDropIn(
                 paymentMethods: jsonEncode(examplePaymentMethods),
-                baseUrl: baseUrl,
-                authToken: 'Bearer AAABBBCCCDDD222111',
+                urlPayments: urlPayments,
+                urlPaymentsDetails: urlPaymentsDetails,
+                authToken: authToken,
                 merchantAccount: merchantAccount,
                 publicKey: pubKey,
-                amount: '12',
+                amount: 12.0,
                 currency: 'EUR',
-                shopperReference: DateTime.now().millisecondsSinceEpoch.toString(),
+                iosReturnUrl: returnScheme + '://',
                 reference: DateTime.now().millisecondsSinceEpoch.toString(),
+                shopperReference: userID,
               );
             } on PlatformException {
               dropInResponse = 'Failed to get platform version.';

@@ -1,15 +1,35 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+
+import 'dart:io' show Platform;
 
 class FlutterAdyen {
   static const MethodChannel _channel = const MethodChannel('flutter_adyen');
 
-  static Future<String> openDropIn(
-      {paymentMethods, baseUrl, authToken, iosReturnUrl, merchantAccount, publicKey, amount, currency = 'EUR', reference, shopperReference}) async {
+  static Future<String> openDropIn({
+    @required String paymentMethods,
+    @required String urlPayments,
+    @required String urlPaymentsDetails,
+    @required String authToken,
+    String iosReturnUrl,
+    @required String merchantAccount,
+    @required String publicKey,
+    @required double amount,
+    @required String currency,
+    @required String reference,
+    @required String shopperReference
+    Map<String, String> headers
+  }) async
+  {
+    assert(!(Platform.isIOS && iosReturnUrl == null));
+
     Map<String, dynamic> args = {};
+
     args.putIfAbsent('paymentMethods', () => paymentMethods);
-    args.putIfAbsent('baseUrl', () => baseUrl);
+    args.putIfAbsent('urlPayments', () => urlPayments);
+    args.putIfAbsent('urlPaymentsDetails', () => urlPaymentsDetails);
     args.putIfAbsent('authToken', () => authToken);
     args.putIfAbsent('iosReturnUrl', () => iosReturnUrl);
     args.putIfAbsent('merchantAccount', () => merchantAccount);

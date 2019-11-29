@@ -13,7 +13,8 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     }
     
     var dropInComponent: DropInComponent?
-    var baseURL: String?
+    var urlPayments: String?
+    var urlPaymentsDetails: String?
     var authToken: String?
     var merchantAccount: String?
     var pubKey: String?
@@ -30,7 +31,9 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         
         let arguments = call.arguments as? [String: Any]
         let paymentMethodsResponse = arguments?["paymentMethods"] as? String
-        baseURL = arguments?["baseUrl"] as? String
+        
+        urlPayments = arguments?["urlPayments"] as? String
+        urlPaymentsDetails = arguments?["urlPaymentsDetails"] as? String
         authToken = arguments?["authToken"] as? String
         merchantAccount = arguments?["merchantAccount"] as? String
         pubKey = arguments?["pubKey"] as? String
@@ -39,6 +42,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         returnUrl = arguments?["iosReturnUrl"] as? String
         shopperReference = arguments?["shopperReference"] as? String
         reference = arguments?["reference"] as? String
+        
         mResult = result
         
         guard let paymentData = paymentMethodsResponse?.data(using: .utf8),
@@ -50,7 +54,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         configuration.card.publicKey = pubKey
         dropInComponent = DropInComponent(paymentMethods: paymentMethods, paymentMethodsConfiguration: configuration)
         dropInComponent?.delegate = self
-        dropInComponent?.environment = .test
+        dropInComponent?.environment = .test //TODO !!!!
         
         //        topController = UIApplication.shared.keyWindow?.rootViewController
         //        while let presentedViewController = topController?.presentedViewController {
@@ -69,7 +73,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
 extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     
     public func didSubmit(_ data: PaymentComponentData, from component: DropInComponent) {
-        guard let baseURL = baseURL, let url = URL(string: baseURL + "payments/") else { return }
+        guard let url = URL(string: urlPayments!) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
@@ -82,8 +86,8 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                                    "channel": "iOS",
                                    "merchantAccount": merchantAccount,
                                    "reference": reference,
-                                   "returnUrl": returnUrl! + "://",
-                                   "storePaymentMethod": false,
+                                   "returnUrl": returnUrl!,
+                                   "storePaymentMethod": data.storePaymentMethod,
                                    "additionalData": ["allow3DS2":"false"]]
         
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
@@ -134,7 +138,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didProvide(_ data: ActionComponentData, from component: DropInComponent) {
-        guard let baseURL = baseURL, let url = URL(string: baseURL + "payments/details/") else { return }
+        guard let url = URL(string: urlPaymentsDetails!) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
