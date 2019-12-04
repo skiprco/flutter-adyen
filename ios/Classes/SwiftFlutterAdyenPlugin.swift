@@ -13,16 +13,21 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     }
     
     var dropInComponent: DropInComponent?
-    var urlPayments: String?
-    var urlPaymentsDetails: String?
+    
+    var urlPayments: String
+    var urlPaymentsDetails: String
     var authToken: String?
-    var merchantAccount: String?
-    var pubKey: String?
-    var currency: String?
-    var amount: String?
+    var merchantAccount: String
+    var pubKey: String
+    var currency: String
+    var amount: String
     var returnUrl: String?
-    var shopperReference: String?
-    var reference: String?
+    var shopperReference: String
+    var reference: String
+    var allow3DS2: Bool
+    var httpMethod: String
+    var testEnvironment: Bool
+
     var mResult: FlutterResult?
     var topController: UIViewController?
     
@@ -32,16 +37,19 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         let arguments = call.arguments as? [String: Any]
         let paymentMethodsResponse = arguments?["paymentMethods"] as? String
         
-        urlPayments = arguments?["urlPayments"] as? String
-        urlPaymentsDetails = arguments?["urlPaymentsDetails"] as? String
+        urlPayments = arguments?["urlPayments"] as! String
+        urlPaymentsDetails = arguments?["urlPaymentsDetails"] as! String
         authToken = arguments?["authToken"] as? String
-        merchantAccount = arguments?["merchantAccount"] as? String
-        pubKey = arguments?["pubKey"] as? String
-        currency = arguments?["currency"] as? String
-        amount = arguments?["amount"] as? String
+        merchantAccount = arguments?["merchantAccount"] as! String
+        pubKey = arguments?["pubKey"] as! String
+        currency = arguments?["currency"] as! String
+        amount = arguments?["amount"] as! String
         returnUrl = arguments?["iosReturnUrl"] as? String
-        shopperReference = arguments?["shopperReference"] as? String
-        reference = arguments?["reference"] as? String
+        shopperReference = arguments?["shopperReference"] as! String
+        reference = arguments?["reference"] as! String
+        allow3DS2 = arguments?["allow3DS2"] as! Bool
+        httpMethod = arguments?["httpMethod"] as? String ?? "POST"
+        testEnvironment = arguments?["testEnvironment"] as! Bool
         
         mResult = result
         
@@ -54,7 +62,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         configuration.card.publicKey = pubKey
         dropInComponent = DropInComponent(paymentMethods: paymentMethods, paymentMethodsConfiguration: configuration)
         dropInComponent?.delegate = self
-        dropInComponent?.environment = .test //TODO !!!!
+        dropInComponent?.environment = testEnvironment ? .test : .live
         
         //        topController = UIApplication.shared.keyWindow?.rootViewController
         //        while let presentedViewController = topController?.presentedViewController {
@@ -73,22 +81,33 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
 extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     
     public func didSubmit(_ data: PaymentComponentData, from component: DropInComponent) {
-        guard let url = URL(string: urlPayments!) else { return }
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        guard let url = URL(string: urlPayments) else { return }
         
-        let amountAsDouble = Double(amount!)
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod
+        if (authToken != nil){
+            request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
+        }
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        //TODO loop through headers
+        //request.addValue(<#T##value: String##String#>, forHTTPHeaderField: <#T##String#>)
+        
         // prepare json data
-        let json: [String: Any] = ["paymentMethod": data.paymentMethod.dictionaryRepresentation,
-                                   "amount": ["currency":currency, "value":amountAsDouble],
-                                   "channel": "iOS",
-                                   "merchantAccount": merchantAccount,
-                                   "reference": reference,
-                                   "returnUrl": returnUrl!,
-                                   "storePaymentMethod": data.storePaymentMethod,
-                                   "additionalData": ["allow3DS2":"false"]]
+        let json: [String: Any] = [
+           "paymentMethod": data.paymentMethod.dictionaryRepresentation,
+           "amount": [
+            "currency": currency,
+            "value": Double(amount)!
+           ],
+           "channel": "iOS",
+           "merchantAccount": merchantAccount,
+           "reference": reference,
+           "returnUrl": returnUrl!,
+           "storePaymentMethod": data.storePaymentMethod,
+           "additionalData": [
+            "allow3DS2": allow3DS2
+           ]
+        ]
         
         let jsonData = try? JSONSerialization.data(withJSONObject: json)
         
@@ -105,7 +124,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         if ((paymentResponseJson) != nil) {
             let action = paymentResponseJson?!["action"]
             if(action != nil) {
-                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action/*, options: .sortedKeys*/)) as! Action
+                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action)) as! Action
                 if(act != nil){
                     component.handle(act!)
                 }
@@ -138,10 +157,12 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didProvide(_ data: ActionComponentData, from component: DropInComponent) {
-        guard let url = URL(string: urlPaymentsDetails!) else { return }
+        guard let url = URL(string: urlPaymentsDetails) else { return }
         var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
+        request.httpMethod = httpMethod
+        if (authToken != nil) {
+            request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
+        }
         request.addValue("application/json", forHTTPHeaderField: "Content-Type")
         
         let json: [String: Any] = ["details": data.details.dictionaryRepresentation,"paymentData": data.paymentData]

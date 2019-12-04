@@ -12,15 +12,18 @@ class FlutterAdyen {
     @required String paymentMethods,
     @required String urlPayments,
     @required String urlPaymentsDetails,
-    @required String authToken,
+    String authToken,
     String iosReturnUrl,
     @required String merchantAccount,
     @required String publicKey,
     @required double amount,
     @required String currency,
     @required String reference,
-    @required String shopperReference
-    Map<String, String> headers
+    @required String shopperReference,
+    @required bool allow3DS2,
+    String httpMethod = 'POST',
+    Map<String, String> headers,
+    bool testEnvironment,
   }) async
   {
     assert(!(Platform.isIOS && iosReturnUrl == null));
@@ -38,6 +41,10 @@ class FlutterAdyen {
     args.putIfAbsent('currency', () => currency);
     args.putIfAbsent('reference', () => reference);
     args.putIfAbsent('shopperReference', () => shopperReference);
+    args.putIfAbsent('allow3DS2', () => allow3DS2);
+    args.putIfAbsent('headers', () => shopperReference);
+    args.putIfAbsent('httpMethod', () => httpMethod);
+    args.putIfAbsent('testEnvironment', () => httpMethod);
 
     final String response = await _channel.invokeMethod('openDropIn', args);
     return response;
