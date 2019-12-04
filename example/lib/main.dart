@@ -54,6 +54,7 @@ class _MyAppState extends State<MyApp> {
                 iosReturnUrl: returnScheme + '://',
                 reference: DateTime.now().millisecondsSinceEpoch.toString(),
                 shopperReference: userID,
+                allow3DS2: true
               );
             } on PlatformException {
               dropInResponse = 'Failed to get platform version.';

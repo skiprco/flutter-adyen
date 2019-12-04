@@ -14,19 +14,19 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     
     var dropInComponent: DropInComponent?
     
-    var urlPayments: String
-    var urlPaymentsDetails: String
+    var urlPayments: String = ""
+    var urlPaymentsDetails: String = ""
     var authToken: String?
-    var merchantAccount: String
-    var pubKey: String
-    var currency: String
-    var amount: String
+    var merchantAccount: String = ""
+    var pubKey: String = ""
+    var currency: String = ""
+    var amount: String = ""
     var returnUrl: String?
-    var shopperReference: String
-    var reference: String
-    var allow3DS2: Bool
-    var httpMethod: String
-    var testEnvironment: Bool
+    var shopperReference: String = ""
+    var reference: String = ""
+    var allow3DS2: Bool = false
+    var httpMethod: String = ""
+    var testEnvironment: Bool = false
 
     var mResult: FlutterResult?
     var topController: UIViewController?
