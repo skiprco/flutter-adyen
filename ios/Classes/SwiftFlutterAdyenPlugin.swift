@@ -32,7 +32,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     var topController: UIViewController?
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard call.method.elementsEqual("openDropIn") else { return }
+        guard call.method.elementsEqual("choosePaymentMethod") else { return }
         
         let arguments = call.arguments as? [String: Any]
         let paymentMethodsResponse = arguments?["paymentMethods"] as? String
@@ -83,15 +83,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     public func didSubmit(_ data: PaymentComponentData, from component: DropInComponent) {
         guard let url = URL(string: urlPayments) else { return }
         
-        var request = URLRequest(url: url)
-        request.httpMethod = httpMethod
-        if (authToken != nil){
-            request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
-        }
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        //TODO loop through headers
-        //request.addValue(<#T##value: String##String#>, forHTTPHeaderField: <#T##String#>)
-        
         // prepare json data
         let json: [String: Any] = [
            "paymentMethod": data.paymentMethod.dictionaryRepresentation,
@@ -108,9 +99,28 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
             "allow3DS2": allow3DS2
            ]
         ]
+
+        let jsonData = try? JSONSerialization.data(withJSONObject: json, options: JSONSerialization.WritingOptions.prettyPrinted)
         
-        let jsonData = try? JSONSerialization.data(withJSONObject: json)
+        do {
+            let convertedString = String(data: jsonData!, encoding: String.Encoding.utf8)
+            print(convertedString ?? "defaultvalue")
+            self.mResult!(convertedString)
+        } catch let myJSONError {
+            print(myJSONError)
+            self.mResult!(FlutterError(code: "1", message: myJSONError.localizedDescription, details: nil))
+        }
         
+        return
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = httpMethod
+        if (authToken != nil){
+            request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
+        }
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        //TODO loop through headers
+        //request.addValue(<#T##value: String##String#>, forHTTPHeaderField: <#T##String#>)
         request.httpBody = jsonData
         URLSession.shared.dataTask(with: request) { data, response, error in
             if(data != nil) {

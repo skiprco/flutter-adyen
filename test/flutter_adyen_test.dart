@@ -16,6 +16,6 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    expect(await FlutterAdyen.openDropIn, '42');
+    expect(await FlutterAdyen.choosePaymentMethod, '42');
   });
 }

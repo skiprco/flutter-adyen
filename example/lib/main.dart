@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
           child: Icon(Icons.add),
           onPressed: () async {
             try {
-              dropInResponse = await FlutterAdyen.openDropIn(
+              dropInResponse = await FlutterAdyen.choosePaymentMethod(
                 paymentMethods: jsonEncode(examplePaymentMethods),
                 urlPayments: urlPayments,
                 urlPaymentsDetails: urlPaymentsDetails,

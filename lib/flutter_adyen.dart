@@ -8,7 +8,7 @@ import 'dart:io' show Platform;
 class FlutterAdyen {
   static const MethodChannel _channel = const MethodChannel('flutter_adyen');
 
-  static Future<String> openDropIn({
+  static Future<String> choosePaymentMethod({
     @required String paymentMethods,
     @required String urlPayments,
     @required String urlPaymentsDetails,
@@ -46,7 +46,7 @@ class FlutterAdyen {
     args.putIfAbsent('httpMethod', () => httpMethod);
     args.putIfAbsent('testEnvironment', () => httpMethod);
 
-    final String response = await _channel.invokeMethod('openDropIn', args);
+    final String response = await _channel.invokeMethod('choosePaymentMethod', args);
     return response;
   }
 }
