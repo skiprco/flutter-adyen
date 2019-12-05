@@ -20,7 +20,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     var merchantAccount: String = ""
     var pubKey: String = ""
     var currency: String = ""
-    var amount: String = ""
+    var amount: Double = 0.0
     var returnUrl: String?
     var shopperReference: String = ""
     var reference: String = ""
@@ -32,8 +32,17 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     var topController: UIViewController?
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-        guard call.method.elementsEqual("choosePaymentMethod") else { return }
+        switch call.method {
+        case "choosePaymentMethod":
+            choosePaymentMethod(call, result: result)
+        case "onResponse":
+            onResponse(call, result: result)
+        default:
+            result(FlutterMethodNotImplemented)
+        }
+    }
         
+    public func choosePaymentMethod(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? [String: Any]
         let paymentMethodsResponse = arguments?["paymentMethods"] as? String
         
@@ -43,13 +52,13 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         merchantAccount = arguments?["merchantAccount"] as! String
         pubKey = arguments?["pubKey"] as! String
         currency = arguments?["currency"] as! String
-        amount = arguments?["amount"] as! String
+        amount = arguments?["amount"] as! Double
         returnUrl = arguments?["iosReturnUrl"] as? String
         shopperReference = arguments?["shopperReference"] as! String
         reference = arguments?["reference"] as! String
         allow3DS2 = arguments?["allow3DS2"] as! Bool
         httpMethod = arguments?["httpMethod"] as? String ?? "POST"
-        testEnvironment = arguments?["testEnvironment"] as! Bool
+        testEnvironment = arguments?["testEnvironment"] as? Bool ?? false
         
         mResult = result
         
@@ -73,22 +82,50 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
             while let presentedViewController = topController.presentedViewController{
                 topController = presentedViewController
             }
+            
+            if #available(iOS 13.0, *) {
+                dropInComponent!.viewController.overrideUserInterfaceStyle = .light
+            }
+            
             topController.present(dropInComponent!.viewController, animated: true)
         }
+    }
+    
+    public func onResponse(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        let arguments = call.arguments as? [String: Any]
+        let payload = arguments?["payload"] as! String
+        let data = payload.data(using: .utf8)!
+        /*
+         do{
+             if let json = stringToParse.data(using: String.Encoding.utf8){
+                 if let jsonData = try JSONSerialization.jsonObject(with: json, options: .allowFragments) as? [String:AnyObject]{
+
+                     let id = jsonData["id"] as! String
+
+                     ...
+                 }
+             }
+         }catch {
+             print(error.localizedDescription)
+
+         }
+         */
+        
+        finish(data: data, component: dropInComponent!)
     }
 }
 
 extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     
     public func didSubmit(_ data: PaymentComponentData, from component: DropInComponent) {
-        guard let url = URL(string: urlPayments) else { return }
+        //guard let url = URL(string: urlPayments) else { return }
         
         // prepare json data
         let json: [String: Any] = [
            "paymentMethod": data.paymentMethod.dictionaryRepresentation,
            "amount": [
             "currency": currency,
-            "value": Double(amount)!
+            "value": amount
            ],
            "channel": "iOS",
            "merchantAccount": merchantAccount,
@@ -113,7 +150,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         
         return
         
-        var request = URLRequest(url: url)
+        /*var request = URLRequest(url: url)
         request.httpMethod = httpMethod
         if (authToken != nil){
             request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
@@ -126,20 +163,20 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
             if(data != nil) {
                 self.finish(data: data!, component: component)
             }
-            }.resume()
+            }.resume()*/
     }
-    
+        
     func finish(data: Data, component: DropInComponent) {
         let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? Dictionary<String,Any>
         if ((paymentResponseJson) != nil) {
             let action = paymentResponseJson?!["action"]
             if(action != nil) {
-                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action)) as! Action
+                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action))
                 if(act != nil){
                     component.handle(act!)
                 }
             } else {
-                let resultCode = try? paymentResponseJson!!["resultCode"] as! String
+                let resultCode = try? paymentResponseJson!!["resultCode"] as? String
                 let success = resultCode == "Authorised" || resultCode == "Received" || resultCode == "Pending"
                 component.stopLoading()
                 if (success) {
@@ -152,7 +189,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                         }
                     }
                 } else {
-                    self.mResult!("Failed with result code \(resultCode)")
+                    self.mResult!("Failed with result code \(resultCode ?? "-none-")")
                     DispatchQueue.global(qos: .background).async {
                         
                         // Background Thread

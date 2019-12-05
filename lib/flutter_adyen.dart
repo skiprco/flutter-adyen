@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -48,5 +49,14 @@ class FlutterAdyen {
 
     final String response = await _channel.invokeMethod('choosePaymentMethod', args);
     return response;
+  }
+
+  static Future<String> sendResponse(Map<String, dynamic> paymentCallResult) async {
+
+    Map<String, dynamic> args = {};
+
+    args.putIfAbsent('payload', () => json.encode(paymentCallResult));
+
+    return await _channel.invokeMethod('onResponse', args);
   }
 }

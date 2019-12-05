@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
+  String _debugInfo = 'Unknown';
 
   @override
   void initState() {
@@ -30,7 +30,7 @@ class _MyAppState extends State<MyApp> {
     if (!mounted) return;
 
     setState(() {
-      _platformVersion = dropInResponse;
+      _debugInfo = dropInResponse;
     });
   }
 
@@ -41,6 +41,9 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () async {
+            var scheme = returnScheme + '://';
+            var ref = "5933644c-ab32-49f7-a9cd-fd2dc87fab2e";
+
             try {
               dropInResponse = await FlutterAdyen.choosePaymentMethod(
                 paymentMethods: jsonEncode(examplePaymentMethods),
@@ -51,25 +54,57 @@ class _MyAppState extends State<MyApp> {
                 publicKey: pubKey,
                 amount: 12.0,
                 currency: 'EUR',
-                iosReturnUrl: returnScheme + '://',
-                reference: DateTime.now().millisecondsSinceEpoch.toString(),
+                iosReturnUrl: scheme,
+                reference: ref,
                 shopperReference: userID,
                 allow3DS2: true
               );
             } on PlatformException {
-              dropInResponse = 'Failed to get platform version.';
+              dropInResponse = 'PlatformException.';
+            } on Exception {
+              dropInResponse = 'Exception.';
             }
+
             setState(() {
-              _platformVersion = dropInResponse;
+              _debugInfo = dropInResponse;
             });
-            setState(() {});
+
+            var res = await FlutterAdyen.sendResponse({
+              "resultCode": "RedirectShopper",
+              "action": {
+                "data": {
+                  "MD": "OEVudmZVMUlkWjd0MDNwUWs2bmhSdz09...",
+                  "PaReq": "eNpVUttygjAQ/RXbDyAXBYRZ00HpTH3wUosPfe...",
+                  "TermUrl": "adyencheckout://your.package.name"
+                },
+                "method": "POST",
+                "paymentData": "Ab02b4c0!BQABAgA4e3wGkhVah4CJL19qdegdmm9E...",
+                "paymentMethodType": "scheme",
+                "type": "redirect",
+                "url": "https://test.adyen.com/hpp/3d/validate.shtml"
+              },
+              "details": [
+                {
+                  "key": "MD",
+                  "type": "text"
+                },
+                {
+                  "key": "PaRes",
+                  "type": "text"
+                }
+              ],
+            });
+
+            setState(() {
+              _debugInfo = dropInResponse + "||||" + res;
+            });
           },
         ),
         appBar: AppBar(
           title: const Text('Flutter Adyen'),
         ),
         body: Center(
-          child: Text('Running on: $_platformVersion\n'),
+          child: Text('Running on: $_debugInfo\n'),
         ),
       ),
     );
