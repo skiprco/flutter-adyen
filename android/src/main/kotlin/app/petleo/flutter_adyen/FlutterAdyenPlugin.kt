@@ -8,7 +8,7 @@ import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
 import com.adyen.checkout.base.model.payments.response.Action
 import com.adyen.checkout.card.CardConfiguration
-import com.adyen.checkout.core.log.LogUtil
+import com.adyen.checkout.core.api.Environment
 import com.adyen.checkout.dropin.DropIn
 import com.adyen.checkout.dropin.DropInConfiguration
 import com.adyen.checkout.dropin.service.CallResult
@@ -22,15 +22,15 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
-import okhttp3.MediaType
-import okhttp3.RequestBody
 import org.json.JSONObject
-import java.io.IOException
 
 var result: Result? = null
 var mActivity: Activity? = null
 
+const val sharedPrefsKey:String = "ADYEN"
+
 class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
+
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
@@ -41,155 +41,176 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
 
     override fun onMethodCall(call: MethodCall, res: Result) {
         when (call.method) {
-            "openDropIn" -> {
-                val paymentMethods = call.argument<String>("paymentMethods")
-                val baseUrl = call.argument<String>("baseUrl")
-                val authToken = call.argument<String>("authToken")
-                val merchantAccount = call.argument<String>("merchantAccount")
-                val pubKey = call.argument<String>("pubKey")
-                val amount = call.argument<String>("amount")
-                val currency = call.argument<String>("currency")
-                val reference = call.argument<String>("reference")
-                val shopperReference = call.argument<String>("shopperReference")
-
-                try {
-                    val jsonObject = JSONObject(paymentMethods)
-                    val paymentMethodsApiResponse = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
-                    val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount
-                            ?: "").build()
-                    val cardConfiguration = CardConfiguration.Builder(activity, pubKey
-                            ?: "").build()
-                    val resultIntent = Intent(activity, activity::class.java)
-                    resultIntent.putExtra("baseUrl", baseUrl)
-                    resultIntent.putExtra("Authorization", authToken)
-                    val sharedPref = activity.getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
-                    with(sharedPref.edit()) {
-                        putString("baseUrl", baseUrl)
-                        putString("Authorization", authToken)
-                        putString("merchantAccount", merchantAccount)
-                        putString("amount", amount)
-                        putString("currency", currency)
-                        putString("reference", reference)
-                        putString("shopperReference", shopperReference)
-                        commit()
-                    }
-                    resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-
-                    val dropInConfiguration = DropInConfiguration.Builder(activity, resultIntent, MyDropInService::class.java)
-                            .addCardConfiguration(cardConfiguration)
-                            .addGooglePayConfiguration(googlePayConfig)
-                            .build()
-                    DropIn.startPayment(activity, paymentMethodsApiResponse, dropInConfiguration)
-                    result = res
-                    mActivity = activity
-                } catch (e: Throwable) {
-                    res.error("Adyen:: Failed with this error: ", "${e.printStackTrace()}", "")
-                }
-            }
-            else -> {
-                res.notImplemented()
-            }
+            "choosePaymentMethod" -> choosePaymentMethod(call, res)
+            "onResponse" -> onResponse(call, res)
+            else -> res.notImplemented()
         }
+    }
+
+    private fun choosePaymentMethod(call: MethodCall, res: Result) {
+        val paymentMethodsPayload = call.argument<String>("paymentMethodsPayload")
+
+        val merchantAccount = call.argument<String>("merchantAccount")
+        val pubKey = call.argument<String>("pubKey")
+        val amount = call.argument<String>("amount")
+        val currency = call.argument<String>("currency")
+        val reference = call.argument<String>("reference")
+        val shopperReference = call.argument<String>("shopperReference")
+        val allow3DS2 = call.argument<Boolean>("allow3DS2") ?: false
+        val testEnvironment = call.argument<Boolean>("testEnvironment") ?: false
+
+        try {
+            val jsonObject = JSONObject(paymentMethodsPayload?: "")
+            val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
+            val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
+            val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "").build()
+            val resultIntent = Intent(activity, activity::class.java)
+
+            val sharedPref = activity.getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                putString("merchantAccount", merchantAccount)
+                putString("amount", amount)
+                putString("currency", currency)
+                putString("reference", reference)
+                putString("shopperReference", shopperReference)
+                putBoolean("allow3DS2", allow3DS2)
+                commit()
+            }
+            resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            val dropInConfig = DropInConfiguration.Builder(activity, resultIntent, MyDropInService::class.java)
+                    .addCardConfiguration(cardConfiguration)
+                    .addGooglePayConfiguration(googlePayConfig)
+
+            if (testEnvironment)
+                dropInConfig.mEnvironment = Environment.TEST
+            else
+                dropInConfig.mEnvironment = Environment.EUROPE
+
+            val dropInConfiguration = dropInConfig.build()
+
+            DropIn.startPayment(activity, paymentMethodsPayloadString, dropInConfiguration)
+            result = res
+            mActivity = activity
+        } catch (e: Throwable) {
+            res.error("Adyen:: Failed with this error: ", "${e.printStackTrace()}", "")
+        }
+    }
+
+    private fun onResponse(call: MethodCall, res: Result) {
+        val payload = call.argument<String>("payload")
+        val data = JSONObject(payload)
+        MyDropInService.instance.finish(data)
     }
 }
 
-/**
- * This is just an example on how to make network calls on the [DropInService].
- * You should make the calls to your own servers and have additional data or processing if necessary.
- */
 class MyDropInService : DropInService() {
 
     companion object {
-        private val TAG = LogUtil.getTag()
+        lateinit var instance: MyDropInService
+        //private val TAG = LogUtil.getTag()
     }
 
+    override fun onCreate() {
+        super.onCreate()
+        instance = this
+    }
+
+
     override fun makePaymentsCall(paymentComponentData: JSONObject): CallResult {
-        val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
-        val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
-        val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
+        val sharedPref = getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
+
         val merchantAccount = sharedPref.getString("merchantAccount", "UNDEFINED_STR")
         val amount = sharedPref.getString("amount", "UNDEFINED_STR")
         val currency = sharedPref.getString("currency", "UNDEFINED_STR")
         val reference = sharedPref.getString("reference", "UNDEFINED_STR")
         val shopperReference = sharedPref.getString("shopperReference", "UNDEFINED_STR")
+        val allow3DS2 = sharedPref.getBoolean("allow3DS2", false)
 
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
 
         if (serializedPaymentComponentData.paymentMethod == null)
             return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
 
-        val paymentsRequest = createPaymentsRequest(this@MyDropInService, serializedPaymentComponentData, amount
-                ?: "", currency ?: "", merchantAccount ?: "", reference, shopperReference)
-        val paymentsRequestJson = serializePaymentsRequest(paymentsRequest)
+        val paymentsRequestBody = createPaymentsRequest(
+            this@MyDropInService,
+            serializedPaymentComponentData,
+            amount ?: "",
+            currency ?: "",
+            merchantAccount ?: "",
+            reference,
+            shopperReference,
+            allow3DS2 = allow3DS2
+        )
+        val paymentsRequestBodyJson = serializePaymentsRequest(paymentsRequestBody)
 
-        val requestBody = RequestBody.create(MediaType.parse("application/json"), paymentsRequestJson.toString())
-
-        val headers: HashMap<String, String> = HashMap()
-        headers["Authorization"] = authorization ?: ""
-        val call = getService(headers, baseUrl ?: "").payments(requestBody)
-        call.request().headers()
-        return try {
-            val response = call.execute()
-            val paymentsResponse = response.body()
-
-            if (response.isSuccessful && paymentsResponse != null) {
-                if (paymentsResponse.action != null) {
-                    CallResult(CallResult.ResultType.ACTION, Action.SERIALIZER.serialize(paymentsResponse.action).toString())
-                } else {
-                    if (paymentsResponse.resultCode != null &&
-                            (paymentsResponse.resultCode == "Authorised" || paymentsResponse.resultCode == "Received" || paymentsResponse.resultCode == "Pending")) {
-                        mActivity?.runOnUiThread { result?.success("SUCCESS") }
-                        CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode)
-                    } else {
-                        mActivity?.runOnUiThread { result?.error("Result code is ${paymentsResponse.resultCode}", "Payment not Authorised", "") }
-                        CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode
-                                ?: "EMPTY")
-                    }
-                }
-            } else {
-                mActivity?.runOnUiThread { result?.error("FAILED - ${response.message()}", "IOException", "") }
-                CallResult(CallResult.ResultType.ERROR, "IOException")
-            }
-        } catch (e: IOException) {
-            mActivity?.runOnUiThread { result?.error("FAILED", e.stackTrace.toString(), "") }
-            CallResult(CallResult.ResultType.ERROR, "IOException")
-        }
+        return CallResult(CallResult.ResultType.FINISHED, paymentsRequestBodyJson.toString())
     }
 
     override fun makeDetailsCall(actionComponentData: JSONObject): CallResult {
-        val sharedPref = getSharedPreferences("ADYEN", Context.MODE_PRIVATE)
-        val baseUrl = sharedPref.getString("baseUrl", "UNDEFINED_STR")
-        val authorization = sharedPref.getString("Authorization", "UNDEFINED_STR")
+        /*
+        val sharedPref = getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
-        val headers: HashMap<String, String> = HashMap()
         headers["Authorization"] = authorization ?: ""
         val call = getService(headers, baseUrl ?: "").details(requestBody)
         return try {
             val response = call.execute()
             val detailsResponse = response.body()
+
             if (response.isSuccessful && detailsResponse != null) {
                 if (detailsResponse.resultCode != null &&
                         (detailsResponse.resultCode == "Authorised" || detailsResponse.resultCode == "Received" || detailsResponse.resultCode == "Pending")) {
                     mActivity?.runOnUiThread { result?.success("SUCCESS") }
-                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
+                    return CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode)
                 } else {
                     mActivity?.runOnUiThread { result?.error("Result code is ${detailsResponse.resultCode}", "Payment not Authorised", "") }
-                    CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode
+                    return CallResult(CallResult.ResultType.FINISHED, detailsResponse.resultCode
                             ?: "EMPTY")
                 }
             } else {
                 mActivity?.runOnUiThread { result?.error("FAILED - ${response.message()}", "IOException", "") }
-                CallResult(CallResult.ResultType.ERROR, "IOException")
+                return CallResult(CallResult.ResultType.ERROR, "IOException")
             }
         } catch (e: IOException) {
             mActivity?.runOnUiThread { result?.error("FAILED", e.stackTrace.toString(), "") }
-            CallResult(CallResult.ResultType.ERROR, "IOException")
+            return CallResult(CallResult.ResultType.ERROR, "IOException")
+        }
+        */
+        return CallResult(CallResult.ResultType.FINISHED, "")
+    }
+
+    fun finish(paymentsResponse: JSONObject): CallResult {
+        if (paymentsResponse.has("action")) {
+            val action = paymentsResponse.getString("action")
+            return CallResult(CallResult.ResultType.ACTION, /*Action.SERIALIZER.serialize(*/action/*).toString()*/)
+        } else {
+            var code = paymentsResponse.getString("resultCode")
+            /*if (paymentsResponse.resultCode != null &&
+                (paymentsResponse.resultCode == "Authorised" ||
+                 paymentsResponse.resultCode == "Received" ||
+                 paymentsResponse.resultCode == "Pending")
+            ){
+                mActivity?.runOnUiThread { result?.success("SUCCESS") }
+                return CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode)
+            } else {*/
+                mActivity?.runOnUiThread { result?.error("Result code is ${code}", "Payment not Authorised", "") }
+                return CallResult(CallResult.ResultType.FINISHED, code
+                        ?: "EMPTY")
+            //}
         }
     }
 }
 
 
-fun createPaymentsRequest(context: Context, paymentComponentData: PaymentComponentData<out PaymentMethodDetails>, amount: String, currency: String, merchant: String, reference: String?, shopperReference: String?): PaymentsRequest {
+fun createPaymentsRequest(context: Context,
+                          paymentComponentData: PaymentComponentData<out PaymentMethodDetails>,
+                          amount: String,
+                          currency: String,
+                          merchant: String,
+                          reference: String?,
+                          shopperReference: String?,
+                          allow3DS2: Boolean
+): PaymentsRequest {
     @Suppress("UsePropertyAccessSyntax")
     return PaymentsRequest(
             paymentComponentData.getPaymentMethod() as PaymentMethodDetails,
@@ -198,7 +219,8 @@ fun createPaymentsRequest(context: Context, paymentComponentData: PaymentCompone
             getAmount(amount, currency),
             merchant,
             RedirectComponent.getReturnUrl(context),
-            reference ?: ""
+            reference ?: "",
+            additionalData = AdditionalData(allow3DS2 = allow3DS2.toString())
     )
 }
 
@@ -212,15 +234,15 @@ fun createAmount(value: Int, currency: String): Amount {
 }
 
 data class PaymentsRequest(
-        val paymentMethod: PaymentMethodDetails,
-        val storePaymentMethod: Boolean,
-        val shopperReference: String,
-        val amount: Amount,
-        val merchantAccount: String,
-        val returnUrl: String,
-        val reference: String,
-        val channel: String = "android",
-        val additionalData: AdditionalData = AdditionalData(allow3DS2 = "false")
+    val paymentMethod: PaymentMethodDetails,
+    val storePaymentMethod: Boolean,
+    val shopperReference: String,
+    val amount: Amount,
+    val merchantAccount: String,
+    val returnUrl: String,
+    val reference: String,
+    val channel: String = "android",
+    val additionalData: AdditionalData = AdditionalData(allow3DS2 = "false")
 )
 
 data class AdditionalData(val allow3DS2: String = "false")
