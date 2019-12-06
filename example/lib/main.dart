@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adyen/flutter_adyen.dart';
-import 'package:flutter_adyen_example/mock_data.dart' as prefix0;
 
 import 'mock_data.dart';
 
@@ -43,13 +42,11 @@ class _MyAppState extends State<MyApp> {
           onPressed: () async {
             var scheme = returnScheme + '://';
             var ref = "5933644c-ab32-49f7-a9cd-fd2dc87fab2e";
+            var paymentMethodsPayload = json.encode(examplePaymentMethods);
 
             try {
               dropInResponse = await FlutterAdyen.choosePaymentMethod(
-                paymentMethods: jsonEncode(examplePaymentMethods),
-                urlPayments: urlPayments,
-                urlPaymentsDetails: urlPaymentsDetails,
-                authToken: authToken,
+                paymentMethodsPayload: paymentMethodsPayload,
                 merchantAccount: merchantAccount,
                 publicKey: pubKey,
                 amount: 12.0,
@@ -57,7 +54,8 @@ class _MyAppState extends State<MyApp> {
                 iosReturnUrl: scheme,
                 reference: ref,
                 shopperReference: userID,
-                allow3DS2: true
+                allow3DS2: true,
+                testEnvironment: true
               );
             } on PlatformException {
               dropInResponse = 'PlatformException.';

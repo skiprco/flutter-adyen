@@ -14,9 +14,6 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     
     var dropInComponent: DropInComponent?
     
-    var urlPayments: String = ""
-    var urlPaymentsDetails: String = ""
-    var authToken: String?
     var merchantAccount: String = ""
     var pubKey: String = ""
     var currency: String = ""
@@ -25,7 +22,6 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     var shopperReference: String = ""
     var reference: String = ""
     var allow3DS2: Bool = false
-    var httpMethod: String = ""
     var testEnvironment: Bool = false
 
     var mResult: FlutterResult?
@@ -44,11 +40,8 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         
     public func choosePaymentMethod(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let arguments = call.arguments as? [String: Any]
-        let paymentMethodsResponse = arguments?["paymentMethods"] as? String
+        let paymentMethodsPayload = arguments?["paymentMethodsPayload"] as? String
         
-        urlPayments = arguments?["urlPayments"] as! String
-        urlPaymentsDetails = arguments?["urlPaymentsDetails"] as! String
-        authToken = arguments?["authToken"] as? String
         merchantAccount = arguments?["merchantAccount"] as! String
         pubKey = arguments?["pubKey"] as! String
         currency = arguments?["currency"] as! String
@@ -57,12 +50,11 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         shopperReference = arguments?["shopperReference"] as! String
         reference = arguments?["reference"] as! String
         allow3DS2 = arguments?["allow3DS2"] as! Bool
-        httpMethod = arguments?["httpMethod"] as? String ?? "POST"
         testEnvironment = arguments?["testEnvironment"] as? Bool ?? false
         
         mResult = result
         
-        guard let paymentData = paymentMethodsResponse?.data(using: .utf8),
+        guard let paymentData = paymentMethodsPayload?.data(using: .utf8),
             let paymentMethods = try? JSONDecoder().decode(PaymentMethods.self, from: paymentData) else {
                 return
         }
@@ -149,29 +141,23 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         }
         
         return
-        
-        /*var request = URLRequest(url: url)
-        request.httpMethod = httpMethod
-        if (authToken != nil){
-            request.setValue("\(authToken!)", forHTTPHeaderField: "Authorization")
-        }
-        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        //TODO loop through headers
-        //request.addValue(<#T##value: String##String#>, forHTTPHeaderField: <#T##String#>)
-        request.httpBody = jsonData
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            if(data != nil) {
-                self.finish(data: data!, component: component)
-            }
-            }.resume()*/
     }
         
+    fileprivate func dismissAdyenController() {
+        DispatchQueue.global(qos: .background).async {
+            // Background Thread
+            DispatchQueue.main.async {
+                self.topController?.dismiss(animated: false, completion: nil)
+            }
+        }
+    }
+    
     func finish(data: Data, component: DropInComponent) {
         let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? Dictionary<String,Any>
         if ((paymentResponseJson) != nil) {
             let action = paymentResponseJson?!["action"]
             if(action != nil) {
-                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action))
+                let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action!))
                 if(act != nil){
                     component.handle(act!)
                 }
@@ -181,29 +167,18 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                 component.stopLoading()
                 if (success) {
                     self.mResult!("SUCCESS")
-                    DispatchQueue.global(qos: .background).async {
-                        
-                        // Background Thread
-                        DispatchQueue.main.async {
-                            self.topController?.dismiss(animated: false, completion: nil)
-                        }
-                    }
+                    dismissAdyenController()
                 } else {
-                    self.mResult!("Failed with result code \(resultCode ?? "-none-")")
-                    DispatchQueue.global(qos: .background).async {
-                        
-                        // Background Thread
-                        
-                        DispatchQueue.main.async {
-                            self.topController?.dismiss(animated: false, completion: nil)
-                        }
-                    }
+                    let err = FlutterError(code: "2", message: "Failed with result code \(String(describing: resultCode ?? "-none-"))", details: nil)
+                    self.mResult!(err)
+                    dismissAdyenController()
                 }
             }
         }
     }
     
     public func didProvide(_ data: ActionComponentData, from component: DropInComponent) {
+        /* TODO
         guard let url = URL(string: urlPaymentsDetails) else { return }
         var request = URLRequest(url: url)
         request.httpMethod = httpMethod
@@ -219,19 +194,12 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
             if(data != nil) {
                 self.finish(data: data!, component: component)
             }
-            }.resume()
+        }.resume()*/
     }
     
     public func didFail(with error: Error, from component: DropInComponent) {
        self.mResult!("CANCELLED")
-       DispatchQueue.global(qos: .background).async {
-            
-            // Background Thread
-            
-            DispatchQueue.main.async {
-                self.topController?.dismiss(animated: false, completion: nil)
-            }
-        }
+       dismissAdyenController()
     }
 }
 

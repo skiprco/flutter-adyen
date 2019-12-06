@@ -10,10 +10,7 @@ class FlutterAdyen {
   static const MethodChannel _channel = const MethodChannel('flutter_adyen');
 
   static Future<String> choosePaymentMethod({
-    @required String paymentMethods,
-    @required String urlPayments,
-    @required String urlPaymentsDetails,
-    String authToken,
+    @required String paymentMethodsPayload,
     String iosReturnUrl,
     @required String merchantAccount,
     @required String publicKey,
@@ -22,20 +19,15 @@ class FlutterAdyen {
     @required String reference,
     @required String shopperReference,
     @required bool allow3DS2,
-    String httpMethod = 'POST',
-    Map<String, String> headers,
-    bool testEnvironment,
+    @required bool testEnvironment,
   }) async
   {
     assert(!(Platform.isIOS && iosReturnUrl == null));
 
     Map<String, dynamic> args = {};
 
-    args.putIfAbsent('paymentMethods', () => paymentMethods);
-    args.putIfAbsent('urlPayments', () => urlPayments);
-    args.putIfAbsent('urlPaymentsDetails', () => urlPaymentsDetails);
-    args.putIfAbsent('authToken', () => authToken);
-    args.putIfAbsent('iosReturnUrl', () => iosReturnUrl);
+    args.putIfAbsent('paymentMethodsPayload', () => paymentMethodsPayload);
+
     args.putIfAbsent('merchantAccount', () => merchantAccount);
     args.putIfAbsent('pubKey', () => publicKey);
     args.putIfAbsent('amount', () => amount);
@@ -43,9 +35,9 @@ class FlutterAdyen {
     args.putIfAbsent('reference', () => reference);
     args.putIfAbsent('shopperReference', () => shopperReference);
     args.putIfAbsent('allow3DS2', () => allow3DS2);
-    args.putIfAbsent('headers', () => shopperReference);
-    args.putIfAbsent('httpMethod', () => httpMethod);
-    args.putIfAbsent('testEnvironment', () => httpMethod);
+    args.putIfAbsent('iosReturnUrl', () => iosReturnUrl);
+
+    args.putIfAbsent('testEnvironment', () => testEnvironment);
 
     final String response = await _channel.invokeMethod('choosePaymentMethod', args);
     return response;
