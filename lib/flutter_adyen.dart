@@ -49,6 +49,7 @@ class FlutterAdyen {
 
     args.putIfAbsent('payload', () => json.encode(paymentCallResult));
 
-    return await _channel.invokeMethod('onResponse', args);
+    final String response = await _channel.invokeMethod('onResponse', args);
+    return response;
   }
 }

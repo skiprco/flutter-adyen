@@ -39,6 +39,8 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     }
         
     private func choosePaymentMethod(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        mResult = result
+        
         let arguments = call.arguments as? [String: Any]
         let paymentMethodsPayload = arguments?["paymentMethodsPayload"] as? String
         
@@ -51,8 +53,6 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         reference = arguments?["reference"] as! String
         allow3DS2 = arguments?["allow3DS2"] as! Bool
         testEnvironment = arguments?["testEnvironment"] as? Bool ?? false
-        
-        mResult = result
         
         guard let paymentData = paymentMethodsPayload?.data(using: .utf8),
             let paymentMethods = try? JSONDecoder().decode(PaymentMethods.self, from: paymentData) else {
@@ -84,6 +84,8 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     }
     
     private func onResponse(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
+        mResult = result
+        
         let arguments = call.arguments as? [String: Any]
         let payload = arguments?["payload"] as! String
         let data = payload.data(using: .utf8)!
