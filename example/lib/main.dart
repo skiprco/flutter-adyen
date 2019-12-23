@@ -43,7 +43,6 @@ class _MyAppState extends State<MyApp> {
             var scheme = returnScheme + '://';
             var ref = "5933644c-ab32-49f7-a9cd-fd2dc87fab2e";
             var paymentMethodsPayload = json.encode(examplePaymentMethods);
-
             try {
               dropInResponse = await FlutterAdyen.choosePaymentMethod(
                 paymentMethodsPayload: paymentMethodsPayload,
@@ -67,7 +66,13 @@ class _MyAppState extends State<MyApp> {
               _debugInfo = dropInResponse;
             });
 
-            var res = await FlutterAdyen.sendResponse({
+            var res = await FlutterAdyen.sendResponse(
+                {
+                  "pspReference":"883577097894825J",
+                  "resultCode":"Authorised",
+                  "merchantReference":"e13e71f7-c9b7-406a-a800-18fce8204173"
+                }
+            /*{
               "resultCode": "RedirectShopper",
               "action": {
                 "data": {
@@ -91,7 +96,8 @@ class _MyAppState extends State<MyApp> {
                   "type": "text"
                 }
               ],
-            });
+            }*/
+            );
 
             setState(() {
               _debugInfo = dropInResponse + "||||" + res;

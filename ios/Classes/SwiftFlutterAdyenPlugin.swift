@@ -116,15 +116,10 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
 
         let jsonData = try? JSONSerialization.data(withJSONObject: json, options: JSONSerialization.WritingOptions.prettyPrinted)
         
-        do {
-            let convertedString = String(data: jsonData!, encoding: String.Encoding.utf8)
-            print(convertedString ?? "defaultvalue")
-            self.mResult!(convertedString)
-        } catch let myJSONError {
-            print(myJSONError)
-            self.mResult!(FlutterError(code: "1", message: myJSONError.localizedDescription, details: nil))
-        }
-        
+        let convertedString = String(data: jsonData!, encoding: String.Encoding.utf8)
+        print(convertedString ?? "defaultvalue")
+        self.mResult!(convertedString)
+
         return
     }
     
@@ -173,7 +168,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                     component.handle(act!)
                 }
             } else {
-                let resultCode = try? paymentResponseJson!!["resultCode"] as? String
+                let resultCode = paymentResponseJson?!["resultCode"] as? String
                 let success = resultCode == "Authorised" || resultCode == "Received" || resultCode == "Pending"
                 component.stopLoading()
                 if (success) {
