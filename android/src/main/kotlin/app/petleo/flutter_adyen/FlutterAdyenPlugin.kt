@@ -107,8 +107,11 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
     }
 
     private fun onResponse(call: MethodCall, res: Result) {
+        result = res;
+
         val payload = call.argument<String>("payload")
-        val data = JSONObject(payload)
+        val data = JSONObject(payload!!)
+
         MyDropInService.instance.finish(data)
     }
 }
