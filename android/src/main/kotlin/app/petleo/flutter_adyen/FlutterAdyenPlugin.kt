@@ -25,6 +25,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import org.json.JSONObject
+import kotlin.math.roundToInt
 import com.adyen.checkout.bcmc.BcmcComponentProvider as BcmcComponentProvider
 
 var result: Result? = null
@@ -232,12 +233,12 @@ fun createPaymentsRequest(context: Context,
     )
 }
 
-private fun getAmount(amount: String, currency: String) = createAmount(amount.toInt(), currency)
+private fun getAmount(amount: String, currency: String) = createAmount(amount, currency)
 
-fun createAmount(value: Int, currency: String): Amount {
+fun createAmount(value: String, currency: String): Amount {
     val amount = Amount()
     amount.currency = currency
-    amount.value = value
+    amount.value = (value.toDouble() * 100).roundToInt()
     return amount
 }
 
