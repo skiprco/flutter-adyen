@@ -40,9 +40,11 @@ class _MyAppState extends State<MyApp> {
         floatingActionButton: FloatingActionButton(
           child: Icon(Icons.add),
           onPressed: () async {
-            var scheme = returnScheme + '://';
+            var scheme = 'your_app://';
             var ref = "5933644c-ab32-49f7-a9cd-fd2dc87fab2e";
             var paymentMethodsPayload = json.encode(examplePaymentMethods);
+            var userID = "abcdef";
+
             try {
               dropInResponse = await FlutterAdyen.choosePaymentMethod(
                 paymentMethodsPayload: paymentMethodsPayload,
@@ -56,7 +58,7 @@ class _MyAppState extends State<MyApp> {
                 allow3DS2: true,
                 testEnvironment: true
               );
-            } on PlatformException {
+            } on PlatformException catch (e){
               dropInResponse = 'PlatformException.';
             } on Exception {
               dropInResponse = 'Exception.';
