@@ -8,6 +8,7 @@ import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
 import com.adyen.checkout.base.model.payments.response.Action
+import com.adyen.checkout.bcmc.BcmcConfiguration
 import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.core.api.Environment
 import com.adyen.checkout.dropin.DropIn
@@ -24,6 +25,7 @@ import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import org.json.JSONObject
+import com.adyen.checkout.bcmc.BcmcComponentProvider as BcmcComponentProvider
 
 var result: Result? = null
 var mActivity: Activity? = null
@@ -66,7 +68,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
             val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
             val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
             val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "").build()
-            //val bcmc = com.adyen.checkout.
+            val bcmcConfiguration = BcmcConfiguration.Builder(activity, pubKey?:"").build()
             val resultIntent = Intent(activity, activity::class.java)
 
             val sharedPref = activity.getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
@@ -86,11 +88,12 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
             val dropInConfig = DropInConfiguration.Builder(activity, resultIntent, MyDropInService::class.java)
                     .addCardConfiguration(cardConfiguration)
                     .addGooglePayConfiguration(googlePayConfig)
+                    .addBcmcConfiguration(bcmcConfiguration)
 
             if (testEnvironment)
-                dropInConfig.mEnvironment = Environment.TEST
+                dropInConfig.setEnvironment(Environment.TEST)
             else
-                dropInConfig.mEnvironment = Environment.EUROPE
+                dropInConfig.setEnvironment(Environment.EUROPE)
 
             val dropInConfiguration = dropInConfig.build()
 
@@ -257,7 +260,7 @@ private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObje
             .add(PolymorphicJsonAdapterFactory.of(PaymentMethodDetails::class.java, PaymentMethodDetails.TYPE)
                     .withSubtype(CardPaymentMethod::class.java, CardPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(IdealPaymentMethod::class.java, IdealPaymentMethod.PAYMENT_METHOD_TYPE)
-                    .withSubtype(MolpayPaymentMethod::class.java, MolpayPaymentMethod.PAYMENT_METHOD_TYPE)
+                    //.withSubtype(MolpayPaymentMethod::class.java, MolpayPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(EPSPaymentMethod::class.java, EPSPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(DotpayPaymentMethod::class.java, DotpayPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(EntercashPaymentMethod::class.java, EntercashPaymentMethod.PAYMENT_METHOD_TYPE)

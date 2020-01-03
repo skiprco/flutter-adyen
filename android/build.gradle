@@ -54,6 +54,7 @@ android {
     defaultConfig {
         minSdkVersion 16
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
     }
     lintOptions {
         disable 'InvalidPackage'
@@ -61,8 +62,9 @@ android {
 }
 
 dependencies {
+    implementation 'com.android.support:multidex:1.0.3'
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "com.adyen.checkout:drop-in:3.2.1"
+    implementation "com.adyen.checkout:drop-in:3.6.1"
     implementation "com.google.code.gson:gson:2.8.5"
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:$version_kotlinx"
     implementation "com.android.support:appcompat-v7:$version_support_library"
