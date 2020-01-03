@@ -3,6 +3,7 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+//import android.os.Environment
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
@@ -52,10 +53,11 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
 
         val merchantAccount = call.argument<String>("merchantAccount")
         val pubKey = call.argument<String>("pubKey")
-        val amount = call.argument<String>("amount")
+        val amount = call.argument<Double>("amount")
         val currency = call.argument<String>("currency")
         val reference = call.argument<String>("reference")
         val shopperReference = call.argument<String>("shopperReference")
+        val storePaymentMethod = call.argument<Boolean>("storePaymentMethod") ?: false
         val allow3DS2 = call.argument<Boolean>("allow3DS2") ?: false
         val testEnvironment = call.argument<Boolean>("testEnvironment") ?: false
 
@@ -64,15 +66,18 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
             val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
             val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
             val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "").build()
+            //val bcmc = com.adyen.checkout.
             val resultIntent = Intent(activity, activity::class.java)
 
             val sharedPref = activity.getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
             with(sharedPref.edit()) {
                 putString("merchantAccount", merchantAccount)
-                putString("amount", amount)
+                putString("amount", amount.toString())
                 putString("currency", currency)
+                putString("channel", "Android")
                 putString("reference", reference)
                 putString("shopperReference", shopperReference)
+                putBoolean("storePaymentMethod", storePaymentMethod)
                 putBoolean("allow3DS2", allow3DS2)
                 commit()
             }
