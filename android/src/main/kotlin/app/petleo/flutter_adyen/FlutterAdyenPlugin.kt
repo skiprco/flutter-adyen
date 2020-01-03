@@ -153,7 +153,11 @@ class MyDropInService : DropInService() {
         )
         val paymentsRequestBodyJson = serializePaymentsRequest(paymentsRequestBody)
 
-        return CallResult(CallResult.ResultType.FINISHED, paymentsRequestBodyJson.toString())
+        val resp = paymentsRequestBodyJson.toString()
+
+        mActivity?.runOnUiThread { result?.success(resp) }
+
+        return CallResult(CallResult.ResultType.FINISHED, resp)
     }
 
     override fun makeDetailsCall(actionComponentData: JSONObject): CallResult {
@@ -193,19 +197,17 @@ class MyDropInService : DropInService() {
             val action = paymentsResponse.getString("action")
             return CallResult(CallResult.ResultType.ACTION, /*Action.SERIALIZER.serialize(*/action/*).toString()*/)
         } else {
-            var code = paymentsResponse.getString("resultCode")
-            /*if (paymentsResponse.resultCode != null &&
-                (paymentsResponse.resultCode == "Authorised" ||
-                 paymentsResponse.resultCode == "Received" ||
-                 paymentsResponse.resultCode == "Pending")
+            val code = paymentsResponse.getString("resultCode")
+            if (code == "Authorised" ||
+                code == "Received" ||
+                code == "Pending"
             ){
                 mActivity?.runOnUiThread { result?.success("SUCCESS") }
-                return CallResult(CallResult.ResultType.FINISHED, paymentsResponse.resultCode)
-            } else {*/
+                return CallResult(CallResult.ResultType.FINISHED, code)
+            } else {
                 mActivity?.runOnUiThread { result?.error("Result code is ${code}", "Payment not Authorised", "") }
-                return CallResult(CallResult.ResultType.FINISHED, code
-                        ?: "EMPTY")
-            //}
+                return CallResult(CallResult.ResultType.FINISHED, code?: "EMPTY")
+            }
         }
     }
 }
