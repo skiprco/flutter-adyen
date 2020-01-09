@@ -61,6 +61,8 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         val reference = call.argument<String>("reference")
         val shopperReference = call.argument<String>("shopperReference")
         val storePaymentMethod = call.argument<Boolean>("storePaymentMethod") ?: false
+        val shopperInteraction = call.argument<String>("shopperInteraction") ?: false
+        val recurringProcessingModel = call.argument<String>("recurringProcessingModel") ?: false
         val allow3DS2 = call.argument<Boolean>("allow3DS2") ?: false
         val testEnvironment = call.argument<Boolean>("testEnvironment") ?: false
 
@@ -81,6 +83,8 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                 putString("reference", reference)
                 putString("shopperReference", shopperReference)
                 putBoolean("storePaymentMethod", storePaymentMethod)
+                putBoolean("shopperInteraction", shopperInteraction)
+                putBoolean("recurringProcessingModel", recurringProcessingModel)
                 putBoolean("allow3DS2", allow3DS2)
                 commit()
             }
@@ -137,6 +141,9 @@ class MyDropInService : DropInService() {
         val currency = sharedPref.getString("currency", "UNDEFINED_STR")
         val reference = sharedPref.getString("reference", "UNDEFINED_STR")
         val shopperReference = sharedPref.getString("shopperReference", "UNDEFINED_STR")
+        val shopperInteraction = sharedPref.getString("shopperInteraction", "UNDEFINED_STR")
+        val storePaymentMethod = sharedPref.getBoolean("storePaymentMethod", false)
+        val recurringProcessingModel = sharedPref.getString("recurringProcessingModel", "UNDEFINED_STR")
         val allow3DS2 = sharedPref.getBoolean("allow3DS2", false)
 
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
@@ -152,7 +159,10 @@ class MyDropInService : DropInService() {
             merchantAccount ?: "",
             reference,
             shopperReference,
-            allow3DS2 = allow3DS2
+            allow3DS2,
+            shopperInteraction,
+            recurringProcessingModel,
+            storePaymentMethod
         )
         val paymentsRequestBodyJson = serializePaymentsRequest(paymentsRequestBody)
 
@@ -224,18 +234,25 @@ fun createPaymentsRequest(context: Context,
                           merchant: String,
                           reference: String?,
                           shopperReference: String?,
-                          allow3DS2: Boolean
+                          allow3DS2: Boolean,
+                          shopperInteraction: String,
+                          recurringProcessingModel: String,
+                          storePaymentMethod: Boolean
 ): PaymentsRequest {
     @Suppress("UsePropertyAccessSyntax")
     return PaymentsRequest(
             paymentComponentData.getPaymentMethod() as PaymentMethodDetails,
             paymentComponentData.isStorePaymentMethodEnable,
             shopperReference ?: "NO_REFERENCE_DEFINED",
+            shopperInteraction,
+            recurringProcessingModel,
             getAmount(amount, currency),
             merchant,
             RedirectComponent.getReturnUrl(context),
             reference ?: "",
-            additionalData = AdditionalData(allow3DS2 = allow3DS2.toString())
+            'android',
+            storePaymentMethod,
+            additionalData = AdditionalData(allow3DS2 = allow3DS2.toString()),
     )
 }
 
@@ -252,11 +269,14 @@ data class PaymentsRequest(
     val paymentMethod: PaymentMethodDetails,
     val storePaymentMethod: Boolean,
     val shopperReference: String,
+    val shopperInteraction: String,
+    val recurringProcessingModel: String,
     val amount: Amount,
     val merchantAccount: String,
     val returnUrl: String,
     val reference: String,
     val channel: String = "android",
+    val storePaymentMethod: Boolean,
     val additionalData: AdditionalData = AdditionalData(allow3DS2 = "false")
 )
 

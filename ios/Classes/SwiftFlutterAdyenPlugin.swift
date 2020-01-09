@@ -23,7 +23,9 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
     var reference: String = ""
     var allow3DS2: Bool = false
     var testEnvironment: Bool = false
-
+    var shopperInteraction:String = ""
+    var storePaymentMethod: Bool = false
+    var recurringProcessingModel:String = ""
     var mResult: FlutterResult?
     var topController: UIViewController?
     
@@ -50,6 +52,9 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         currency = arguments?["currency"] as! String
         returnUrl = arguments?["iosReturnUrl"] as? String
         shopperReference = arguments?["shopperReference"] as! String
+        shopperInteraction = arguments?["shopperInteraction"] as! String
+        storePaymentMethod = arguments?["storePaymentMethod"] as! Bool
+        recurringProcessingModel = arguments?["recurringProcessingModel"] as! String
         reference = arguments?["reference"] as! String
         allow3DS2 = arguments?["allow3DS2"] as! Bool
         testEnvironment = arguments?["testEnvironment"] as? Bool ?? false
@@ -112,8 +117,11 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
            "returnUrl": returnUrl!,
            "shopperReference": shopperReference,
            "storePaymentMethod": data.storePaymentMethod,
+           "shopperInteraction": shopperInteraction,
+           "storePaymentMethod": storePaymentMethod,
+           "recurringProcessingModel": recurringProcessingModel,
            "additionalData": [
-            "allow3DS2": allow3DS2
+               "allow3DS2": allow3DS2
            ]
         ]
 

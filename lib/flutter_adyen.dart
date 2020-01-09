@@ -18,6 +18,9 @@ class FlutterAdyen {
     @required String currency,
     @required String reference,
     @required String shopperReference,
+    @required ShopperInteraction shopperInteraction,
+    @required RecurringProcessingModels recurringProcessingModel,
+    @required bool storePaymentMethod,
     @required bool allow3DS2,
     @required bool testEnvironment,
   }) async
@@ -34,6 +37,9 @@ class FlutterAdyen {
     args.putIfAbsent('currency', () => currency);
     args.putIfAbsent('reference', () => reference);
     args.putIfAbsent('shopperReference', () => shopperReference);
+    args.putIfAbsent('shopperInteraction', () => _enumToString(shopperInteraction));
+    args.putIfAbsent('storePaymentMethod', () => storePaymentMethod);
+    args.putIfAbsent('recurringProcessingModel', () => _enumToString(recurringProcessingModel));
     args.putIfAbsent('allow3DS2', () => allow3DS2);
     args.putIfAbsent('iosReturnUrl', () => iosReturnUrl);
 
@@ -52,4 +58,30 @@ class FlutterAdyen {
     final String response = await _channel.invokeMethod('onResponse', args);
     return response;
   }
+}
+
+enum RecurringProcessingModels {
+  /// A transaction for a fixed or variable amount, which follows a fixed schedule.
+  Subscription,
+  /// Card details are stored to enable one-click or omnichannel journeys, or simply to streamline the checkout process. Any subscription not following a fixed schedule is also considered a card-on-file transaction.
+  CardOnFile,
+  /// A transaction that occurs on a non-fixed schedule and/or have variable amounts. For example, automatic top-ups when a cardholder's balance drops below a certain amount.
+  UnscheduledCardOnFile
+}
+
+enum ShopperInteraction {
+  /// Online transactions where the cardholder is present (online). For better authorisation rates, we recommend sending the card security code (CSC) along with the request.
+  Ecommerce,
+  /// Card on file and/or subscription transactions, where the cardholder is known to the merchant (returning customer). If the shopper is present (online), you can supply also the CSC to improve authorisation (one-click payment).
+  ContAuth,
+  /// Mail-order and telephone-order transactions where the shopper is in contact with the merchant via email or telephone.
+  Moto,
+  /// Point-of-sale transactions where the shopper is physically present to make a payment using a secure payment terminal.
+  POS
+}
+
+String _enumToString<T>(T enumValue, {String orElse()}) {
+  var str = enumValue?.toString() ?? (orElse != null ? orElse() : null);
+  if (str?.contains(".") ?? false) return str?.split('.')?.last ?? null;
+  return str ?? null;
 }

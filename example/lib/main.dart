@@ -56,7 +56,10 @@ class _MyAppState extends State<MyApp> {
                 reference: ref,
                 shopperReference: userID,
                 allow3DS2: true,
-                testEnvironment: true
+                testEnvironment: true,
+                storePaymentMethod: true,
+                shopperInteraction: ShopperInteraction.ContAuth,
+                recurringProcessingModel: RecurringProcessingModels.CardOnFile
               );
             } on PlatformException catch (e){
               dropInResponse = 'PlatformException.';
