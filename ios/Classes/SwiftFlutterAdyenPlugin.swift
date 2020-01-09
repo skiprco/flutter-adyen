@@ -110,6 +110,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
            "merchantAccount": merchantAccount,
            "reference": reference,
            "returnUrl": returnUrl!,
+           "shopperReference": shopperReference,
            "storePaymentMethod": data.storePaymentMethod,
            "additionalData": [
             "allow3DS2": allow3DS2
