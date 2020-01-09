@@ -118,7 +118,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
            "shopperReference": shopperReference,
            "storePaymentMethod": data.storePaymentMethod,
            "shopperInteraction": shopperInteraction,
-           "storePaymentMethod": storePaymentMethod,
            "recurringProcessingModel": recurringProcessingModel,
            "additionalData": [
                "allow3DS2": allow3DS2
