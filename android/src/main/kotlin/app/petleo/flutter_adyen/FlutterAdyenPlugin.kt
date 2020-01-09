@@ -107,7 +107,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
     }
 
     private fun onResponse(call: MethodCall, res: Result) {
-        result = res;
+        result = res
 
         val payload = call.argument<String>("payload")
         val data = JSONObject(payload!!)
@@ -195,6 +195,7 @@ class MyDropInService : DropInService() {
         return CallResult(CallResult.ResultType.FINISHED, "")
     }
 
+    //TODO move this logic to the dart side, it's the same on ios
     fun finish(paymentsResponse: JSONObject): CallResult {
         if (paymentsResponse.has("action")) {
             val action = paymentsResponse.getString("action")
