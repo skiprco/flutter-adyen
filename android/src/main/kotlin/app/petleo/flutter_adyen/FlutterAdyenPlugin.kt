@@ -61,8 +61,8 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         val reference = call.argument<String>("reference")
         val shopperReference = call.argument<String>("shopperReference")
         val storePaymentMethod = call.argument<Boolean>("storePaymentMethod") ?: false
-        val shopperInteraction = call.argument<String>("shopperInteraction") ?: false
-        val recurringProcessingModel = call.argument<String>("recurringProcessingModel") ?: false
+        val shopperInteraction = call.argument<String>("shopperInteraction")
+        val recurringProcessingModel = call.argument<String>("recurringProcessingModel")
         val allow3DS2 = call.argument<Boolean>("allow3DS2") ?: false
         val testEnvironment = call.argument<Boolean>("testEnvironment") ?: false
 
@@ -83,8 +83,8 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                 putString("reference", reference)
                 putString("shopperReference", shopperReference)
                 putBoolean("storePaymentMethod", storePaymentMethod)
-                putBoolean("shopperInteraction", shopperInteraction)
-                putBoolean("recurringProcessingModel", recurringProcessingModel)
+                putString("shopperInteraction", shopperInteraction)
+                putString("recurringProcessingModel", recurringProcessingModel)
                 putBoolean("allow3DS2", allow3DS2)
                 commit()
             }
@@ -160,9 +160,8 @@ class MyDropInService : DropInService() {
             reference,
             shopperReference,
             allow3DS2,
-            shopperInteraction,
-            recurringProcessingModel,
-            storePaymentMethod
+            shopperInteraction ?: "",
+            recurringProcessingModel ?: ""
         )
         val paymentsRequestBodyJson = serializePaymentsRequest(paymentsRequestBody)
 
@@ -236,8 +235,7 @@ fun createPaymentsRequest(context: Context,
                           shopperReference: String?,
                           allow3DS2: Boolean,
                           shopperInteraction: String,
-                          recurringProcessingModel: String,
-                          storePaymentMethod: Boolean
+                          recurringProcessingModel: String
 ): PaymentsRequest {
     @Suppress("UsePropertyAccessSyntax")
     return PaymentsRequest(
@@ -250,9 +248,8 @@ fun createPaymentsRequest(context: Context,
             merchant,
             RedirectComponent.getReturnUrl(context),
             reference ?: "",
-            'android',
-            storePaymentMethod,
-            additionalData = AdditionalData(allow3DS2 = allow3DS2.toString()),
+            "android",
+            additionalData = AdditionalData(allow3DS2 = allow3DS2.toString())
     )
 }
 
@@ -275,8 +272,7 @@ data class PaymentsRequest(
     val merchantAccount: String,
     val returnUrl: String,
     val reference: String,
-    val channel: String = "android",
-    val storePaymentMethod: Boolean,
+    val channel: String,
     val additionalData: AdditionalData = AdditionalData(allow3DS2 = "false")
 )
 
