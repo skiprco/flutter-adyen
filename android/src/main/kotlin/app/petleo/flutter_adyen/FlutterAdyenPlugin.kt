@@ -7,7 +7,6 @@ import android.content.Intent
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
-import com.adyen.checkout.base.model.payments.response.Action
 import com.adyen.checkout.bcmc.BcmcConfiguration
 import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.core.api.Environment
@@ -26,7 +25,6 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import org.json.JSONObject
 import kotlin.math.roundToInt
-import com.adyen.checkout.bcmc.BcmcComponentProvider as BcmcComponentProvider
 
 var result: Result? = null
 var mActivity: Activity? = null
@@ -106,7 +104,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
             result = res
             mActivity = activity
         } catch (e: Throwable) {
-            res.error("Adyen:: Failed with this error: ", "${e.printStackTrace()}", "")
+            res.error("Error", "Adyen:: Failed with this error: ${e.printStackTrace()}", null)
         }
     }
 
@@ -218,7 +216,7 @@ class MyDropInService : DropInService() {
                 mActivity?.runOnUiThread { result?.success("SUCCESS") }
                 return CallResult(CallResult.ResultType.FINISHED, code)
             } else {
-                mActivity?.runOnUiThread { result?.error("Result code is ${code}", "Payment not Authorised", "") }
+                mActivity?.runOnUiThread { result?.error(code, "Payment not Authorised", null) }
                 return CallResult(CallResult.ResultType.FINISHED, code?: "EMPTY")
             }
         }

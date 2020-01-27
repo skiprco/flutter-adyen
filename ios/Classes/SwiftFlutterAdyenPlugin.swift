@@ -185,7 +185,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                     self.mResult!("SUCCESS")
                     dismissAdyenController()
                 } else {
-                    let err = FlutterError(code: "2", message: "Failed with result code \(String(describing: resultCode ?? "-none-"))", details: nil)
+                    let err = FlutterError(code: resultCode ?? "", message: "Failed with result code \(String(describing: resultCode ?? "-none-"))", details: nil)
                     self.mResult!(err)
                     dismissAdyenController()
                 }
