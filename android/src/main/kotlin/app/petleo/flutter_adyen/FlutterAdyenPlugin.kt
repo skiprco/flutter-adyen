@@ -3,7 +3,6 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-//import android.os.Environment
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
@@ -256,7 +255,7 @@ private fun getAmount(amount: String, currency: String) = createAmount(amount, c
 fun createAmount(value: String, currency: String): Amount {
     val amount = Amount()
     amount.currency = currency
-    amount.value = (value.toDouble() * 100).roundToInt()
+    amount.value = value.toDouble().roundToInt()
     return amount
 }
 
