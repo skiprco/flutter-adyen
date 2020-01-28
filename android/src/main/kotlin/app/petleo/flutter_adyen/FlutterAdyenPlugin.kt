@@ -243,7 +243,7 @@ private fun getAmount(amount: String, currency: String) = createAmount(amount, c
 fun createAmount(value: String, currency: String): Amount {
     val amount = Amount()
     amount.currency = currency
-    amount.value = (value.toDouble() * 100).roundToInt()
+    amount.value = value.toInt()
     return amount
 }
 
