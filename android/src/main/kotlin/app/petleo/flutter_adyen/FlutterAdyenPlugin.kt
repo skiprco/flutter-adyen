@@ -3,11 +3,9 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-//import android.os.Environment
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
-import com.adyen.checkout.base.model.payments.response.Action
 import com.adyen.checkout.bcmc.BcmcConfiguration
 import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.core.api.Environment
@@ -26,7 +24,6 @@ import io.flutter.plugin.common.MethodChannel.Result
 import io.flutter.plugin.common.PluginRegistry.Registrar
 import org.json.JSONObject
 import kotlin.math.roundToInt
-import com.adyen.checkout.bcmc.BcmcComponentProvider as BcmcComponentProvider
 
 var result: Result? = null
 var mActivity: Activity? = null
@@ -243,7 +240,7 @@ private fun getAmount(amount: String, currency: String) = createAmount(amount, c
 fun createAmount(value: String, currency: String): Amount {
     val amount = Amount()
     amount.currency = currency
-    amount.value = value.toInt()
+    amount.value = value.toDouble().roundToInt()
     return amount
 }
 
