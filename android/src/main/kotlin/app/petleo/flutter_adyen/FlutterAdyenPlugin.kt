@@ -246,7 +246,7 @@ fun createPaymentsRequest(context: Context,
             RedirectComponent.getReturnUrl(context),
             reference ?: "",
             "android",
-            additionalData = AdditionalData(allow3DS2 = allow3DS2.toString())
+            additionalData = AdditionalData(allow3DS2 = allow3DS2)
     )
 }
 
@@ -270,10 +270,10 @@ data class PaymentsRequest(
     val returnUrl: String,
     val reference: String,
     val channel: String,
-    val additionalData: AdditionalData = AdditionalData(allow3DS2 = "false")
+    val additionalData: AdditionalData = AdditionalData(allow3DS2 = false)
 )
 
-data class AdditionalData(val allow3DS2: String = "false")
+data class AdditionalData(val allow3DS2: Boolean = false)
 
 private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObject {
     val moshi = Moshi.Builder()
