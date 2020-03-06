@@ -3,6 +3,7 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import com.adyen.checkout.base.model.PaymentMethodsApiResponse
 import com.adyen.checkout.base.model.payments.Amount
 import com.adyen.checkout.base.model.payments.request.*
@@ -30,6 +31,8 @@ var mActivity: Activity? = null
 
 const val sharedPrefsKey:String = "ADYEN"
 
+const val enableLogging = false;
+
 class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
 
     companion object {
@@ -49,6 +52,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
     }
 
     private fun choosePaymentMethod(call: MethodCall, res: Result) {
+        log("choosePaymentMethod")
         val paymentMethodsPayload = call.argument<String>("paymentMethodsPayload")
 
         val merchantAccount = call.argument<String>("merchantAccount")
@@ -66,6 +70,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         try {
             val jsonObject = JSONObject(paymentMethodsPayload?: "")
             val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
+            log("paymentMethodsPayloadString $paymentMethodsPayloadString")
             val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
             val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "").build()
             val bcmcConfiguration = BcmcConfiguration.Builder(activity, pubKey?:"").build()
@@ -99,10 +104,14 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
 
             val dropInConfiguration = dropInConfig.build()
 
+            log("opening dropin")
+
             DropIn.startPayment(activity, paymentMethodsPayloadString, dropInConfiguration)
+
             result = res
             mActivity = activity
         } catch (e: Throwable) {
+            log("dropin startpayment error")
             res.error("Error", "Adyen:: Failed with this error: ${e.printStackTrace()}", null)
         }
     }
@@ -110,10 +119,16 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
     private fun onResponse(call: MethodCall, res: Result) {
         result = res
 
+        log ("onresponse")
+
         val payload = call.argument<String>("payload")
         val data = JSONObject(payload!!)
 
+        log ("dropin finish")
+
         MyDropInService.instance.finish(data)
+
+        log ("dropin finished")
     }
 }
 
@@ -131,6 +146,8 @@ class MyDropInService : DropInService() {
 
 
     override fun makePaymentsCall(paymentComponentData: JSONObject): CallResult {
+        log ("make payments call")
+
         val sharedPref = getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
 
         val merchantAccount = sharedPref.getString("merchantAccount", "UNDEFINED_STR")
@@ -148,6 +165,8 @@ class MyDropInService : DropInService() {
         if (serializedPaymentComponentData.paymentMethod == null)
             return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
 
+        log ("before create payment request")
+
         val paymentsRequestBody = createPaymentsRequest(
             this@MyDropInService,
             serializedPaymentComponentData,
@@ -161,6 +180,8 @@ class MyDropInService : DropInService() {
             recurringProcessingModel ?: ""
         )
         val paymentsRequestBodyJson = serializePaymentsRequest(paymentsRequestBody)
+
+        log ("payment request : ${paymentsRequestBodyJson}")
 
         val resp = paymentsRequestBodyJson.toString()
 
@@ -204,17 +225,22 @@ class MyDropInService : DropInService() {
     //TODO move this logic to the dart side, it's the same on ios
     fun finish(paymentsResponse: JSONObject): CallResult {
         if (paymentsResponse.has("action")) {
+            log("finish : action")
             val action = paymentsResponse.getString("action")
             return CallResult(CallResult.ResultType.ACTION, /*Action.SERIALIZER.serialize(*/action/*).toString()*/)
         } else {
+            log("finish : no action")
             val code = paymentsResponse.getString("resultCode")
+            log("finish : code:$code")
             if (code == "Authorised" ||
                 code == "Received" ||
                 code == "Pending"
             ){
+                log("finish : result code ${code}")
                 mActivity?.runOnUiThread { result?.success("SUCCESS") }
                 return CallResult(CallResult.ResultType.FINISHED, code)
             } else {
+                log("finish : error")
                 mActivity?.runOnUiThread { result?.error(code, "Payment not Authorised", null) }
                 return CallResult(CallResult.ResultType.FINISHED, code?: "EMPTY")
             }
@@ -253,9 +279,11 @@ fun createPaymentsRequest(context: Context,
 private fun getAmount(amount: String, currency: String) = createAmount(amount, currency)
 
 fun createAmount(value: String, currency: String): Amount {
+    log("createAmount < $value $currency")
     val amount = Amount()
     amount.currency = currency
     amount.value = value.toDouble().roundToInt()
+    log("createAmount > ${amount.value} ${amount.currency}")
     return amount
 }
 
@@ -276,6 +304,8 @@ data class PaymentsRequest(
 data class AdditionalData(val allow3DS2: Boolean = false)
 
 private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObject {
+    log("serializePaymentsRequest")
+
     val moshi = Moshi.Builder()
             .add(PolymorphicJsonAdapterFactory.of(PaymentMethodDetails::class.java, PaymentMethodDetails.TYPE)
                     .withSubtype(CardPaymentMethod::class.java, CardPaymentMethod.PAYMENT_METHOD_TYPE)
@@ -296,4 +326,10 @@ private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObje
     request.remove("paymentMethod")
     request.put("paymentMethod", PaymentMethodDetails.SERIALIZER.serialize(paymentsRequest.paymentMethod))
     return request
+}
+
+private fun log(toLog: String) {
+    @Suppress("ConstantConditionIf")
+    if (enableLogging)
+        Log.d(sharedPrefsKey, "ADYEN (native) : $toLog")
 }

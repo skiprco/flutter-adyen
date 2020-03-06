@@ -59,19 +59,75 @@ And in the AndroidManifest.xml in your application tag add this service, this al
 </application>
 ``` 
 
-you also might need to set minifyEnabled & useProguard to false if it crashes on a release build
+set proguard rules in `android/app/build.gradle`
 
 ```  
-
 buildTypes {
-           release {
-               signingConfig signingConfigs.release               
-               minifyEnabled false
-               useProguard false
-               proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-           }
-       }
+   release {
+       signingConfig signingConfigs.release               
+       minifyEnabled true
+       useProguard true
+       proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+   }
+}
 ```
+
+and the following inside `android/app/proguard-rules.pro`
+
+```  
+#Flutter Wrapper
+-keep class io.flutter.app.** { *; }
+-keep class io.flutter.plugin.**  { *; }
+-keep class io.flutter.util.**  { *; }
+-keep class io.flutter.view.**  { *; }
+-keep class io.flutter.**  { *; }
+-keep class io.flutter.plugins.**  { *; }
+
+# ADYEN
+-keep class com.adyen.checkout.base.model.** { *; }
+-keep class com.adyen.threeds2.** { *; }
+-keepclassmembers public class * implements com.adyen.checkout.base.PaymentComponent {
+   public <init>(...);
+}
+
+-keep class app.petleo.flutter_adyen.PaymentsRequest** {*;}
+
+-keep class com.adyen.checkout.base.model.PaymentMethodsApiResponse** {*;}
+#-keepclassmembers class com.adyen.checkout.base.model.PaymentMethodsApiResponse** {*;}
+
+# ADYEN MOSHI
+# JSR 305 annotations are for embedding nullability information.
+-dontwarn javax.annotation.**
+
+-keepclasseswithmembers class * {
+    @com.squareup.moshi.* <methods>;
+}
+
+-keep @com.squareup.moshi.JsonQualifier interface *
+
+# Enum field names are used by the integrated EnumJsonAdapter.
+# values() is synthesized by the Kotlin compiler and is used by EnumJsonAdapter indirectly
+# Annotate enums with @JsonClass(generateAdapter = false) to use them with Moshi.
+-keepclassmembers @com.squareup.moshi.JsonClass class * extends java.lang.Enum {
+    <fields>;
+    **[] values();
+}
+
+# / ADYEN MOSHI
+
+# ADYEN MOSHI KOTLIN
+
+-keep class kotlin.reflect.jvm.internal.impl.builtins.BuiltInsLoaderImpl
+
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+
+# / ADYEN MOSHI KOTLIN
+
+# / ADYEN 
+```
+
 
 ###iOS
 You need to add a URL_SCHEME if you do not have one yet.

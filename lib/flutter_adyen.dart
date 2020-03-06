@@ -45,7 +45,12 @@ class FlutterAdyen {
 
     args.putIfAbsent('testEnvironment', () => testEnvironment);
 
+    _log('choosePaymentMethod()');
+
     final String response = await _channel.invokeMethod('choosePaymentMethod', args);
+
+    _log('choosePaymentMethod response $response');
+
     return response;
   }
 
@@ -53,9 +58,18 @@ class FlutterAdyen {
 
     Map<String, dynamic> args = {};
 
-    args.putIfAbsent('payload', () => json.encode(paymentCallResult));
+    args.putIfAbsent('payload', () {
+      var payload = json.encode(paymentCallResult);
+      _log('payload $payload');
+      return payload;
+    });
+
+    _log('onResponse()');
 
     final String response = await _channel.invokeMethod('onResponse', args);
+
+    _log('onResponse response : $response');
+
     return response;
   }
 }
@@ -85,3 +99,8 @@ String _enumToString<T>(T enumValue, {String orElse()}) {
   if (str?.contains(".") ?? false) return str?.split('.')?.last ?? null;
   return str ?? null;
 }
+
+void _log(String toLog) {
+  //print('ADYEN (flutter) : $toLog');
+  //debugPrint('ADYEN (flutter) : $toLog');
+} // print to logcat (to debug in release mode)

@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
                 recurringProcessingModel: RecurringProcessingModels.CardOnFile
               );
             } on PlatformException catch (e){
-              dropInResponse = 'PlatformException.';
+              dropInResponse = 'PlatformException. ${e.message}';
             } on Exception {
               dropInResponse = 'Exception.';
             }
