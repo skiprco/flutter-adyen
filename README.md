@@ -15,7 +15,10 @@ This should support One time payment and recurring payment.
 Before calling the plugin, make sure to get the **payment methods** from Adyen or better from your backend. For this, call the [a /paymentMethods](https://docs.adyen.com/api-explorer/#/PaymentSetupAndVerificationService/v46/paymentMethods) endpoint:
 
 
-POST: https://checkout-test.adyen.com/v46/paymentMethods // Version number might be different
+POST: https://checkout-test.adyen.com/v46/paymentMethods 
+
+// Version number might be different
+
 Payload should contain the merchant account
 ```
 {
@@ -31,16 +34,16 @@ X-API-KEY: AQEXXXXXXXXXXXXXXXX
 
 It's not recommended to store the API key in the front-end for security reasons!
 
-####You also need to have the:
+#### You also need to have the:
 * publicKey (from Adyen)
 * merchantAccount (from Adyen)
 * amount & currency 
 * shopperReference (e.g userId)
 * reference (e.g transactionId)
 
-##Setup
+## Setup
 
-###Android
+### Android
 Add this in your android/build.gradle
 
 ```
@@ -59,7 +62,8 @@ And in the AndroidManifest.xml in your application tag add this service, this al
 </application>
 ``` 
 
-set proguard rules in `android/app/build.gradle`
+Since Flutter 1.12, android release compilation defaults to R8 minify
+Set proguard inside `android/app/build.gradle`
 
 ```  
 buildTypes {
@@ -72,7 +76,7 @@ buildTypes {
 }
 ```
 
-and the following inside `android/app/proguard-rules.pro`
+And add these proguard rules to `android/app/proguard-rules.pro`
 
 ```  
 #Flutter Wrapper
@@ -129,7 +133,7 @@ and the following inside `android/app/proguard-rules.pro`
 ```
 
 
-###iOS
+### iOS
 You need to add a URL_SCHEME if you do not have one yet.
 
 [Here is how to add one.](https://developer.apple.com/documentation/uikit/inter-process_communication/allowing_apps_and_websites_to_link_to_your_content/defining_a_custom_url_scheme_for_your_app)
@@ -137,7 +141,7 @@ You need to add a URL_SCHEME if you do not have one yet.
 You might need to run this command `pod update Adyen/Card` in your ios folder.
 
 
-##Usage
+## Usage
 Just add this in your dart code
 ```
  const PAYMENT_SUCCESS = 'SUCCESS';
@@ -160,8 +164,3 @@ Just add this in your dart code
   if(dropInResponse == 'PAYMENT_CANCELLED') ...
   else ... // you will get the error message here. (It is not translated to any languages)
 ```
-
-### Important to know
-The library expect your backend to provide the following endpoints as documented by Adyen:
- * https://YOURBACKEND/payment/payments/
- * https://YOURBACKEND/payment/payments/details/
