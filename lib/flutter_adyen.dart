@@ -72,6 +72,19 @@ class FlutterAdyen {
 
     return response;
   }
+
+  static Future<bool> clearStorage() async {
+    if (Platform.isAndroid) {
+      try {
+        final String response = await _channel.invokeMethod('clearStorage');
+        return response == 'SUCCESS';
+      }on PlatformException catch (e) {
+        debugPrint(e?.message);
+        return false;
+      }
+    }
+    return true;
+  }
 }
 
 enum RecurringProcessingModels {

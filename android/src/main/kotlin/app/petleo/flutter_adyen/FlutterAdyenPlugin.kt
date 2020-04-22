@@ -47,8 +47,15 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         when (call.method) {
             "choosePaymentMethod" -> choosePaymentMethod(call, res)
             "onResponse" -> onResponse(call, res)
+            "clearStorage" -> onClearStorageRequested(call, res)
             else -> res.notImplemented()
         }
+    }
+
+    private fun onClearStorageRequested(call: MethodCall, res: Result) {
+        val sharedPref = activity.getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
+        sharedPref.edit().clear().apply()
+        activity?.runOnUiThread { res?.success("SUCCESS") }
     }
 
     private fun choosePaymentMethod(call: MethodCall, res: Result) {
@@ -74,8 +81,11 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
             val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
             val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "").build()
             val bcmcConfiguration = BcmcConfiguration.Builder(activity, pubKey?:"").build()
-            val resultIntent = Intent(activity, activity::class.java)
 
+            val resultIntent = Intent(activity, activity::class.java)
+            resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+
+            //TODO : don't store all this, dart version already has all of them
             val sharedPref = activity.getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
             with(sharedPref.edit()) {
                 putString("merchantAccount", merchantAccount)
@@ -90,7 +100,6 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                 putBoolean("allow3DS2", allow3DS2)
                 commit()
             }
-            resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
 
             val dropInConfig = DropInConfiguration.Builder(activity, resultIntent, MyDropInService::class.java)
                     .addCardConfiguration(cardConfiguration)

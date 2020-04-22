@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_adyen/flutter_adyen.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 import 'mock_data.dart';
 
@@ -37,47 +38,90 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        floatingActionButton: FloatingActionButton(
-          child: Icon(Icons.add),
-          onPressed: () async {
-            var scheme = 'your_app://';
-            var ref = "5933644c-ab32-49f7-a9cd-fd2dc87fab2e";
-            var paymentMethodsPayload = json.encode(examplePaymentMethods);
-            var userID = "abcdef";
+        floatingActionButton: SpeedDial(
+          // both default to 16
+          marginRight: 18,
+          marginBottom: 20,
+          animatedIcon: AnimatedIcons.menu_close,
+          animatedIconTheme: IconThemeData(size: 22.0),
+          closeManually: false,
+          curve: Curves.bounceIn,
+          overlayColor: Colors.black,
+          overlayOpacity: 0.5,
+          //onOpen: () => print('OPENING DIAL'),
+          //onClose: () => print('DIAL CLOSED'),
+          tooltip: 'Speed Dial',
+          heroTag: 'speed-dial-hero-tag',
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          elevation: 8.0,
+          shape: CircleBorder(),
+          children: [
+            SpeedDialChild(
+              child: Icon(Icons.delete),
+              backgroundColor: Colors.red,
+              label: 'clear',
+              labelStyle: TextStyle(fontSize: 18.0),
+              onTap: () => FlutterAdyen.clearStorage(),
+            ),
+            SpeedDialChild(
+                child: Icon(Icons.directions_run),
+                backgroundColor: Colors.blue,
+                label: 'try flow',
+                labelStyle: TextStyle(fontSize: 18.0),
+                onTap: tryFlow
+            ),
+          ],
+        ),
+        appBar: AppBar(
+          title: const Text('Flutter Adyen'),
+        ),
+        body: Center(
+          child: Text('Running on: $_debugInfo\n'),
+        ),
+      ),
+    );
+  }
 
-            try {
-              dropInResponse = await FlutterAdyen.choosePaymentMethod(
-                paymentMethodsPayload: paymentMethodsPayload,
-                merchantAccount: merchantAccount,
-                publicKey: pubKey,
-                amount: 12.0,
-                currency: 'EUR',
-                iosReturnUrl: scheme,
-                reference: ref,
-                shopperReference: userID,
-                allow3DS2: true,
-                testEnvironment: true,
-                storePaymentMethod: true,
-                shopperInteraction: ShopperInteraction.ContAuth,
-                recurringProcessingModel: RecurringProcessingModels.CardOnFile
-              );
-            } on PlatformException catch (e){
-              dropInResponse = 'PlatformException. ${e.message}';
-            } on Exception {
-              dropInResponse = 'Exception.';
-            }
+  void tryFlow() async {
+    var scheme = 'your_app://';
+    var ref = "5933644c-ab32-49f7-a9cd-fd2dc87fab2e";
+    var paymentMethodsPayload = json.encode(examplePaymentMethods);
+    var userID = "abcdef";
 
-            setState(() {
-              _debugInfo = dropInResponse;
-            });
+    try {
+      dropInResponse = await FlutterAdyen.choosePaymentMethod(
+          paymentMethodsPayload: paymentMethodsPayload,
+          merchantAccount: merchantAccount,
+          publicKey: pubKey,
+          amount: 12.0,
+          currency: 'EUR',
+          iosReturnUrl: scheme,
+          reference: ref,
+          shopperReference: userID,
+          allow3DS2: true,
+          testEnvironment: true,
+          storePaymentMethod: true,
+          shopperInteraction: ShopperInteraction.ContAuth,
+          recurringProcessingModel: RecurringProcessingModels.CardOnFile
+      );
+    } on PlatformException catch (e){
+      dropInResponse = 'PlatformException. ${e.message}';
+    } on Exception {
+      dropInResponse = 'Exception.';
+    }
 
-            var res = await FlutterAdyen.sendResponse(
-                {
-                  "pspReference":"883577097894825J",
-                  "resultCode":"Authorised",
-                  "merchantReference":"e13e71f7-c9b7-406a-a800-18fce8204173"
-                }
-            /*{
+    setState(() {
+      _debugInfo = dropInResponse;
+    });
+
+    var res = await FlutterAdyen.sendResponse(
+        {
+          "pspReference":"883577097894825J",
+          "resultCode":"Authorised",
+          "merchantReference":"e13e71f7-c9b7-406a-a800-18fce8204173"
+        }
+      /*{
               "resultCode": "RedirectShopper",
               "action": {
                 "data": {
@@ -102,20 +146,10 @@ class _MyAppState extends State<MyApp> {
                 }
               ],
             }*/
-            );
-
-            setState(() {
-              _debugInfo = dropInResponse + "||||" + res;
-            });
-          },
-        ),
-        appBar: AppBar(
-          title: const Text('Flutter Adyen'),
-        ),
-        body: Center(
-          child: Text('Running on: $_debugInfo\n'),
-        ),
-      ),
     );
+
+    setState(() {
+      _debugInfo = dropInResponse + "||||" + res;
+    });
   }
 }
