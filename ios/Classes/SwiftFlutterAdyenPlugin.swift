@@ -170,15 +170,15 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     
     private func finish(data: Data, component: DropInComponent) {
         let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? Dictionary<String,Any>
-        if ((paymentResponseJson) != nil) {
-            let action = paymentResponseJson?!["action"]
+        if let paymentResponseJson = paymentResponseJson as? Dictionary<String,Any> {
+            let action = paymentResponseJson["action"]
             if(action != nil) {
                 let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action!))
                 if(act != nil){
                     component.handle(act!)
                 }
             } else {
-                let resultCode = paymentResponseJson?!["resultCode"] as? String
+                let resultCode = paymentResponseJson["resultCode"] as? String
                 let success = resultCode == "Authorised" || resultCode == "Received" || resultCode == "Pending"
                 component.stopLoading()
                 if (success) {
