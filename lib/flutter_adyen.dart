@@ -21,6 +21,7 @@ class FlutterAdyen {
     @required ShopperInteraction shopperInteraction,
     @required RecurringProcessingModels recurringProcessingModel,
     @required bool storePaymentMethod,
+    @required bool showsStorePaymentMethodField,
     @required bool allow3DS2,
     @required bool testEnvironment,
   }) async
@@ -39,6 +40,7 @@ class FlutterAdyen {
     args.putIfAbsent('shopperReference', () => shopperReference);
     args.putIfAbsent('shopperInteraction', () => _enumToString(shopperInteraction));
     args.putIfAbsent('storePaymentMethod', () => storePaymentMethod);
+    args.putIfAbsent('showsStorePaymentMethodField', () => showsStorePaymentMethodField);
     args.putIfAbsent('recurringProcessingModel', () => _enumToString(recurringProcessingModel));
     args.putIfAbsent('allow3DS2', () => allow3DS2);
     args.putIfAbsent('iosReturnUrl', () => iosReturnUrl);

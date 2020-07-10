@@ -54,6 +54,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         shopperReference = arguments?["shopperReference"] as! String
         shopperInteraction = arguments?["shopperInteraction"] as! String
         storePaymentMethod = arguments?["storePaymentMethod"] as! Bool
+        let showsStorePaymentMethodField = arguments?["showsStorePaymentMethodField"] as! Bool
         recurringProcessingModel = arguments?["recurringProcessingModel"] as! String
         reference = arguments?["reference"] as! String
         allow3DS2 = arguments?["allow3DS2"] as! Bool
@@ -66,6 +67,7 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
         
         let configuration = DropInComponent.PaymentMethodsConfiguration()
         configuration.card.publicKey = pubKey
+        configuration.card.showsStorePaymentMethodField = showsStorePaymentMethodField
         dropInComponent = DropInComponent(paymentMethods: paymentMethods, paymentMethodsConfiguration: configuration)
         dropInComponent?.delegate = self
         dropInComponent?.environment = testEnvironment ? .test : .live
@@ -127,7 +129,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         let jsonData = try? JSONSerialization.data(withJSONObject: json, options: JSONSerialization.WritingOptions.prettyPrinted)
         
         let convertedString = String(data: jsonData!, encoding: String.Encoding.utf8)
-        print(convertedString ?? "defaultvalue")
+        //print(convertedString ?? "defaultvalue")
         self.mResult!(convertedString)
 
         return
@@ -169,7 +171,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     private func finish(data: Data, component: DropInComponent) {
-        let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments) as? Dictionary<String,Any>
+        let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
         if let paymentResponseJson = paymentResponseJson as? Dictionary<String,Any> {
             let action = paymentResponseJson["action"]
             if(action != nil) {

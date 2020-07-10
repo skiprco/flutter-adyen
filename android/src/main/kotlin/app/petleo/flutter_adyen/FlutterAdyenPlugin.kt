@@ -72,14 +72,18 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         val shopperInteraction = call.argument<String>("shopperInteraction")
         val recurringProcessingModel = call.argument<String>("recurringProcessingModel")
         val allow3DS2 = call.argument<Boolean>("allow3DS2") ?: false
+
         val testEnvironment = call.argument<Boolean>("testEnvironment") ?: false
+        val showsStorePaymentMethodField = call.argument<Boolean>("showsStorePaymentMethodField") ?: false
 
         try {
             val jsonObject = JSONObject(paymentMethodsPayload?: "")
             val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
             log("paymentMethodsPayloadString $paymentMethodsPayloadString")
             val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
-            val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "").build()
+            val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "")
+                    .setShowStorePaymentField(showsStorePaymentMethodField)
+                    .build()
             val bcmcConfiguration = BcmcConfiguration.Builder(activity, pubKey?:"").build()
 
             val resultIntent = Intent(activity, activity::class.java)

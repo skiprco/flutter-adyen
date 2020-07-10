@@ -77,7 +77,8 @@ class _MyAppState extends State<MyApp> {
           title: const Text('Flutter Adyen'),
         ),
         body: Center(
-          child: Text('Running on: $_debugInfo\n'),
+          child: Text('Don\'t forget the put a real pubKey in mock_data.dart\n'
+              'Running on: $_debugInfo\n'),
         ),
       ),
     );
@@ -101,9 +102,10 @@ class _MyAppState extends State<MyApp> {
           shopperReference: userID,
           allow3DS2: true,
           testEnvironment: true,
-          storePaymentMethod: true,
+          storePaymentMethod: false,
+          showsStorePaymentMethodField: false,
           shopperInteraction: ShopperInteraction.ContAuth,
-          recurringProcessingModel: RecurringProcessingModels.CardOnFile
+          recurringProcessingModel: RecurringProcessingModels.CardOnFile,
       );
     } on PlatformException catch (e){
       dropInResponse = 'PlatformException. ${e.message}';
