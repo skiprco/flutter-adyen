@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _debugInfo = 'Unknown';
+  String? _debugInfo = 'Unknown';
 
   @override
   void initState() {
@@ -24,7 +24,7 @@ class _MyAppState extends State<MyApp> {
     initPlatformState();
   }
 
-  String dropInResponse;
+  String? dropInResponse;
 
   Future<void> initPlatformState() async {
     if (!mounted) return;
@@ -40,7 +40,7 @@ class _MyAppState extends State<MyApp> {
       home: Scaffold(
         floatingActionButton: SpeedDial(
           // both default to 16
-          marginRight: 18,
+          marginEnd: 18,
           marginBottom: 20,
           animatedIcon: AnimatedIcons.menu_close,
           animatedIconTheme: IconThemeData(size: 22.0),
@@ -151,7 +151,7 @@ class _MyAppState extends State<MyApp> {
     );
 
     setState(() {
-      _debugInfo = dropInResponse + "||||" + res;
+      _debugInfo = dropInResponse! + "||||" + res!;
     });
   }
 }

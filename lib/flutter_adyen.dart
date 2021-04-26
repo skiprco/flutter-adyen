@@ -9,21 +9,21 @@ import 'dart:io' show Platform;
 class FlutterAdyen {
   static const MethodChannel _channel = const MethodChannel('flutter_adyen');
 
-  static Future<String> choosePaymentMethod({
-    @required String paymentMethodsPayload,
-    String iosReturnUrl,
-    @required String merchantAccount,
-    @required String publicKey,
-    @required double amount,
-    @required String currency,
-    @required String reference,
-    @required String shopperReference,
-    @required ShopperInteraction shopperInteraction,
-    @required RecurringProcessingModels recurringProcessingModel,
-    @required bool storePaymentMethod,
-    @required bool showsStorePaymentMethodField,
-    @required bool allow3DS2,
-    @required bool testEnvironment,
+  static Future<String?> choosePaymentMethod({
+    required String paymentMethodsPayload,
+    String? iosReturnUrl,
+    required String merchantAccount,
+    required String publicKey,
+    required double amount,
+    required String currency,
+    required String reference,
+    required String shopperReference,
+    required ShopperInteraction shopperInteraction,
+    required RecurringProcessingModels recurringProcessingModel,
+    required bool storePaymentMethod,
+    required bool showsStorePaymentMethodField,
+    required bool allow3DS2,
+    required bool testEnvironment,
   }) async
   {
     assert(!(Platform.isIOS && iosReturnUrl == null));
@@ -49,14 +49,14 @@ class FlutterAdyen {
 
     _log('choosePaymentMethod()');
 
-    final String response = await _channel.invokeMethod('choosePaymentMethod', args);
+    final String? response = await _channel.invokeMethod('choosePaymentMethod', args);
 
     _log('choosePaymentMethod response $response');
 
     return response;
   }
 
-  static Future<String> sendResponse(Map<String, dynamic> paymentCallResult) async {
+  static Future<String?> sendResponse(Map<String, dynamic> paymentCallResult) async {
 
     Map<String, dynamic> args = {};
 
@@ -68,7 +68,7 @@ class FlutterAdyen {
 
     _log('onResponse()');
 
-    final String response = await _channel.invokeMethod('onResponse', args);
+    final String? response = await _channel.invokeMethod('onResponse', args);
 
     _log('onResponse response : $response');
 
@@ -78,10 +78,10 @@ class FlutterAdyen {
   static Future<bool> clearStorage() async {
     if (Platform.isAndroid) {
       try {
-        final String response = await _channel.invokeMethod('clearStorage');
+        final String? response = await _channel.invokeMethod('clearStorage');
         return response == 'SUCCESS';
       }on PlatformException catch (e) {
-        debugPrint(e?.message);
+        debugPrint(e.message);
         return false;
       }
     }
@@ -109,10 +109,10 @@ enum ShopperInteraction {
   POS
 }
 
-String _enumToString<T>(T enumValue, {String orElse()}) {
+String _enumToString<T>(T enumValue, {String orElse()?}) {
   var str = enumValue?.toString() ?? (orElse != null ? orElse() : null);
-  if (str?.contains(".") ?? false) return str?.split('.')?.last ?? null;
-  return str ?? null;
+  if (str?.contains(".") ?? false) return str!.split('.').last;
+  return str!;
 }
 
 void _log(String toLog) {
