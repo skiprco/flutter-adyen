@@ -1,23 +1,21 @@
 PODS:
-  - Adyen (3.2.0):
-    - Adyen/Card (= 3.2.0)
-    - Adyen/Core (= 3.2.0)
-    - Adyen/DropIn (= 3.2.0)
-  - Adyen/Card (3.2.0):
+  - Adyen/Card (3.8.5):
     - Adyen/Core
-    - Adyen3DS2 (>= 2.1.0-rc.5)
-  - Adyen/Core (3.2.0)
-  - Adyen/DropIn (3.2.0):
+    - Adyen3DS2 (= 2.2.1)
+  - Adyen/Core (3.8.5)
+  - Adyen/DropIn (3.8.5):
     - Adyen/Card
     - Adyen/Core
-  - Adyen3DS2 (2.1.0-rc.5)
+  - Adyen3DS2 (2.2.1)
   - Flutter (1.0.0)
-  - flutter_adyen (0.2.2):
-    - Adyen (~> 3.2.0)
+  - flutter_adyen (3.2.0):
+    - Adyen/Card (~> 3.8.0)
+    - Adyen/Core (~> 3.8.0)
+    - Adyen/DropIn (~> 3.8.0)
     - Flutter
 
 DEPENDENCIES:
-  - Flutter (from `.symlinks/flutter/ios`)
+  - Flutter (from `Flutter`)
   - flutter_adyen (from `.symlinks/plugins/flutter_adyen/ios`)
 
 SPEC REPOS:
@@ -27,16 +25,16 @@ SPEC REPOS:
 
 EXTERNAL SOURCES:
   Flutter:
-    :path: ".symlinks/flutter/ios"
+    :path: Flutter
   flutter_adyen:
     :path: ".symlinks/plugins/flutter_adyen/ios"
 
 SPEC CHECKSUMS:
-  Adyen: c5cd18c6e6daff635ec93b73e189ac1483c37c27
-  Adyen3DS2: 7fae32b63e108bf24375c791652862c458b05c5d
-  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
-  flutter_adyen: 2aacd9dce6f2cc392471a5d91c1f70118f21e768
+  Adyen: 8fd03b7d3de0e301237089a7fd2d864ca02af270
+  Adyen3DS2: d99e5dea8524fc860751804dd760f6bad032de01
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  flutter_adyen: 9055e8ecbd9f2975d8a755c22ed17350015e1ec2
 
-PODFILE CHECKSUM: 3143ffc12c629c005bcae9cd5d61303d1ad4f900
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 
-COCOAPODS: 1.9.3
+COCOAPODS: 1.10.1
