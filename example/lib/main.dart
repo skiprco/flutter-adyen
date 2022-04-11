@@ -102,7 +102,7 @@ class _MyAppState extends State<MyApp> {
           shopperReference: userID,
           allow3DS2: true,
           testEnvironment: true,
-          storePaymentMethod: false,
+          storePaymentMethod: true,
           showsStorePaymentMethodField: false,
           shopperInteraction: ShopperInteraction.ContAuth,
           recurringProcessingModel: RecurringProcessingModels.CardOnFile,

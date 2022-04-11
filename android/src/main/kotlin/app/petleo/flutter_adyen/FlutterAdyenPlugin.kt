@@ -4,16 +4,17 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
-import com.adyen.checkout.base.model.PaymentMethodsApiResponse
-import com.adyen.checkout.base.model.payments.Amount
-import com.adyen.checkout.base.model.payments.request.*
 import com.adyen.checkout.bcmc.BcmcConfiguration
 import com.adyen.checkout.card.CardConfiguration
+import com.adyen.checkout.components.model.PaymentMethodsApiResponse
+import com.adyen.checkout.components.model.payments.Amount
+import com.adyen.checkout.components.model.payments.request.*
+import com.adyen.checkout.components.util.PaymentMethodTypes
 import com.adyen.checkout.core.api.Environment
 import com.adyen.checkout.dropin.DropIn
 import com.adyen.checkout.dropin.DropInConfiguration
-import com.adyen.checkout.dropin.service.CallResult
 import com.adyen.checkout.dropin.service.DropInService
+import com.adyen.checkout.dropin.service.DropInServiceResult
 import com.adyen.checkout.googlepay.GooglePayConfiguration
 import com.adyen.checkout.redirect.RedirectComponent
 import com.squareup.moshi.Moshi
@@ -105,15 +106,13 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
                 commit()
             }
 
-            val dropInConfig = DropInConfiguration.Builder(activity, resultIntent, MyDropInService::class.java)
-                    .addCardConfiguration(cardConfiguration)
-                    .addGooglePayConfiguration(googlePayConfig)
-                    .addBcmcConfiguration(bcmcConfiguration)
-
-            if (testEnvironment)
-                dropInConfig.setEnvironment(Environment.TEST)
-            else
-                dropInConfig.setEnvironment(Environment.EUROPE)
+            val dropInConfig = DropInConfiguration.Builder(activity, MyDropInService::class.java, pubKey?: "")
+                //.setAmount(Amount())
+                .setEnvironment(if (testEnvironment) Environment.TEST else Environment.EUROPE)
+                //.setShopperLocale()
+                .addCardConfiguration(cardConfiguration)
+                .addGooglePayConfiguration(googlePayConfig)
+                .addBcmcConfiguration(bcmcConfiguration)
 
             val dropInConfiguration = dropInConfig.build()
 
@@ -158,7 +157,7 @@ class MyDropInService : DropInService() {
     }
 
 
-    override fun makePaymentsCall(paymentComponentData: JSONObject): CallResult {
+    override fun makePaymentsCall(paymentComponentData: JSONObject): DropInServiceResult {
         log ("make payments call")
 
         val sharedPref = getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
@@ -176,7 +175,7 @@ class MyDropInService : DropInService() {
         val serializedPaymentComponentData = PaymentComponentData.SERIALIZER.deserialize(paymentComponentData)
 
         if (serializedPaymentComponentData.paymentMethod == null)
-            return CallResult(CallResult.ResultType.ERROR, "Empty payment data")
+            return DropInServiceResult.Error("Empty payment data")
 
         log ("before create payment request")
 
@@ -200,10 +199,10 @@ class MyDropInService : DropInService() {
 
         mActivity?.runOnUiThread { result?.success(resp) }
 
-        return CallResult(CallResult.ResultType.FINISHED, resp)
+        return DropInServiceResult.Finished(resp)
     }
 
-    override fun makeDetailsCall(actionComponentData: JSONObject): CallResult {
+    override fun makeDetailsCall(actionComponentData: JSONObject): DropInServiceResult {
         /*
         val sharedPref = getSharedPreferences(sharedPrefsKey, Context.MODE_PRIVATE)
         val requestBody = RequestBody.create(MediaType.parse("application/json"), actionComponentData.toString())
@@ -232,15 +231,15 @@ class MyDropInService : DropInService() {
             return CallResult(CallResult.ResultType.ERROR, "IOException")
         }
         */
-        return CallResult(CallResult.ResultType.FINISHED, "")
+        return DropInServiceResult.Finished("")
     }
 
     //TODO move this logic to the dart side, it's the same on ios
-    fun finish(paymentsResponse: JSONObject): CallResult {
+    fun finish(paymentsResponse: JSONObject): DropInServiceResult {
         if (paymentsResponse.has("action")) {
             log("finish : action")
             val action = paymentsResponse.getString("action")
-            return CallResult(CallResult.ResultType.ACTION, /*Action.SERIALIZER.serialize(*/action/*).toString()*/)
+            return DropInServiceResult.Action(action)
         } else {
             log("finish : no action")
             val code = paymentsResponse.getString("resultCode")
@@ -251,11 +250,11 @@ class MyDropInService : DropInService() {
             ){
                 log("finish : result code ${code}")
                 mActivity?.runOnUiThread { result?.success("SUCCESS") }
-                return CallResult(CallResult.ResultType.FINISHED, code)
+                return DropInServiceResult.Finished(code)
             } else {
                 log("finish : error")
                 mActivity?.runOnUiThread { result?.error(code, "Payment not Authorised", null) }
-                return CallResult(CallResult.ResultType.FINISHED, code?: "EMPTY")
+                return DropInServiceResult.Finished(code?: "EMPTY")
             }
         }
     }
@@ -328,7 +327,7 @@ private fun serializePaymentsRequest(paymentsRequest: PaymentsRequest): JSONObje
                     .withSubtype(DotpayPaymentMethod::class.java, DotpayPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(EntercashPaymentMethod::class.java, EntercashPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(OpenBankingPaymentMethod::class.java, OpenBankingPaymentMethod.PAYMENT_METHOD_TYPE)
-                    .withSubtype(GooglePayPaymentMethod::class.java, GooglePayPaymentMethod.PAYMENT_METHOD_TYPE)
+                    .withSubtype(GooglePayPaymentMethod::class.java, PaymentMethodTypes.GOOGLE_PAY) // GooglePayPaymentMethod.PAYMENT_METHOD_TYPE)
                     .withSubtype(GenericPaymentMethod::class.java, "other")
             )
             .build()

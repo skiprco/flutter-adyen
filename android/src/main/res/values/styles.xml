@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AdyenCheckout.TextInputLayout" >
-        <!--<item name="boxStrokeColor">@color/colorAccent</item>-->
-        <item name="hintTextAppearance">@style/AdyenCheckout.HintTextStyle</item>
+        <!--<item name="boxStrokeColor">@color/colorAccent</item>
+        <item name="hintTextAppearance">@style/AdyenCheckout.HintTextStyle</item>-->
         <item name="android:minHeight">@dimen/input_layout_height</item>
     </style>
 </resources>
