@@ -65,12 +65,13 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
                 return
         }
         
-        let configuration = DropInComponent.PaymentMethodsConfiguration()
-        configuration.card.publicKey = pubKey
+        let apiContext = APIContext(environment: testEnvironment ? Environment.test : Environment.live, clientKey: pubKey)
+        
+        let configuration = DropInComponent.Configuration(apiContext: apiContext)
         configuration.card.showsStorePaymentMethodField = showsStorePaymentMethodField
-        dropInComponent = DropInComponent(paymentMethods: paymentMethods, paymentMethodsConfiguration: configuration)
+        
+        dropInComponent = DropInComponent(paymentMethods: paymentMethods, configuration: configuration)
         dropInComponent?.delegate = self
-        dropInComponent?.environment = testEnvironment ? .test : .live
         
         //        topController = UIApplication.shared.keyWindow?.rootViewController
         //        while let presentedViewController = topController?.presentedViewController {
@@ -103,12 +104,12 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
 
 extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     // back from the ui, for payment call
-    public func didSubmit(_ data: PaymentComponentData, from component: DropInComponent) {
+    public func didSubmit(_ data: PaymentComponentData, for paymentMethod: PaymentMethod, from component: DropInComponent) {
         //guard let url = URL(string: urlPayments) else { return }
         
         // prepare json data
         let json: [String: Any] = [
-           "paymentMethod": data.paymentMethod.dictionaryRepresentation,
+           "paymentMethod": data.paymentMethod.encodable,
            "amount": [
             "currency": currency,
             "value": amount
@@ -118,7 +119,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
            "reference": reference,
            "returnUrl": returnUrl!,
            "shopperReference": shopperReference,
-           "storePaymentMethod": data.storePaymentMethod,
+           "storePaymentMethod": storePaymentMethod,
            "shopperInteraction": shopperInteraction,
            "recurringProcessingModel": recurringProcessingModel,
            "additionalData": [
@@ -169,7 +170,11 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
             }
         }
     }
-    
+
+    public func didComplete(from component: DropInComponent) {
+        //TODO
+    }
+
     private func finish(data: Data, component: DropInComponent) {
         let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
         if let paymentResponseJson = paymentResponseJson as? Dictionary<String,Any> {
@@ -182,7 +187,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
             } else {
                 let resultCode = paymentResponseJson["resultCode"] as? String
                 let success = resultCode == "Authorised" || resultCode == "Received" || resultCode == "Pending"
-                component.stopLoading()
+                //component.stopLoading()
                 if (success) {
                     self.mResult!("SUCCESS")
                     dismissAdyenController()
@@ -209,6 +214,9 @@ extension UIViewController: PaymentComponentDelegate {
 }
 
 extension UIViewController: ActionComponentDelegate {
+    public func didComplete(from component: ActionComponent) {
+        //
+    }
     
     public func didFail(with error: Error, from component: ActionComponent) {
         //performPayment(with: public  }

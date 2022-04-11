@@ -3,7 +3,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'flutter_adyen'
-  s.version          = '3.8.0'
+  s.version          = '4.7.1'
   s.summary          = 'Flutter plugin to integrate with the Android and iOS libraries of Adyen.'
   s.description      = <<-DESC
 Flutter plugin to integrate with the Android and iOS libraries of Adyen.
@@ -15,12 +15,10 @@ Flutter plugin to integrate with the Android and iOS libraries of Adyen.
   s.source_files = 'Classes/**/*'
   s.public_header_files = 'Classes/**/*.h'
   s.dependency 'Flutter'
-  s.dependency 'Adyen/Core', '~> 3.8.0'
-  s.dependency 'Adyen/Card', '~> 3.8.0'
-  s.dependency 'Adyen/DropIn', '~> 3.8.0'
+  s.dependency 'Adyen', '~> 4.7.1'
+  s.dependency 'Adyen3DS2', '~> 2.2.4'
 
-  # should be 11.0
-  s.ios.deployment_target = '10.0'
+  s.ios.deployment_target = '11.0'
 
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'VALID_ARCHS[sdk=iphonesimulator*]' => 'x86_64' }
 end
