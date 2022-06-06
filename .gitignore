@@ -191,3 +191,5 @@ fabric.properties
 /.idea/codeStyles
 /example/ios/Flutter/flutter_export_environment.sh
 /android/.idea/caches/build_file_checksums.ser
+ #fvm
+./fvm/
