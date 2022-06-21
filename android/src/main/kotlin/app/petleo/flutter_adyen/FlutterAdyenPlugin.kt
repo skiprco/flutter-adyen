@@ -40,7 +40,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
             val channel = MethodChannel(registrar.messenger(), "flutter_adyen")
-            channel.setMethodCallHandler(FlutterAdyenPlugin(registrar.activity()))
+            channel.setMethodCallHandler(FlutterAdyenPlugin(registrar.activity()!!))
         }
     }
 
