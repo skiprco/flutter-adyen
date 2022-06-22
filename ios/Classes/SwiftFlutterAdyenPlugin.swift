@@ -106,7 +106,9 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     // back from the ui, for payment call
     public func didSubmit(_ data: PaymentComponentData, for paymentMethod: PaymentMethod, from component: DropInComponent) {
         //guard let url = URL(string: urlPayments) else { return }
-        
+
+        guard let url = returnUrl else { return }
+                
         // prepare json data
         let json: [String: Any] = [
            "paymentMethod": data.paymentMethod.encodable,
@@ -117,7 +119,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
            "channel": "iOS",
            "merchantAccount": merchantAccount,
            "reference": reference,
-           "returnUrl": returnUrl!,
+           "returnUrl": url,
            "shopperReference": shopperReference,
            "storePaymentMethod": storePaymentMethod,
            "shopperInteraction": shopperInteraction,
@@ -126,6 +128,8 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
                "allow3DS2": allow3DS2
            ]
         ]
+        
+        print(json)
 
         let jsonData = try? JSONSerialization.data(withJSONObject: json, options: JSONSerialization.WritingOptions.prettyPrinted)
         
@@ -158,6 +162,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didFail(with error: Error, from component: DropInComponent) {
+       print(error.localizedDescription) 
        self.mResult!("CANCELLED")
        dismissAdyenController()
     }
