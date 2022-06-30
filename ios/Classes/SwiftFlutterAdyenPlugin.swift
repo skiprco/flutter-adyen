@@ -105,15 +105,14 @@ public class SwiftFlutterAdyenPlugin: NSObject, FlutterPlugin {
 extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     // back from the ui, for payment call
     public func didSubmit(_ data: PaymentComponentData, for paymentMethod: PaymentMethod, from component: DropInComponent) {
-        //guard let url = URL(string: urlPayments) else { return }
         
         guard let paymentMethodEncoded = try? JSONEncoder().encode(data.paymentMethod.encodable) else { return }
-        
-        guard let paymentMethod = String(data: paymentMethodEncoded, encoding: .utf8) else { return }
-                        
+
+        guard let paymentMethodJson = try? JSONSerialization.jsonObject(with: paymentMethodEncoded) else { return }
+                                
         // prepare json data
         let json: [String: Any] = [
-           "paymentMethod": paymentMethod,
+           "paymentMethod": paymentMethodJson,
            "amount": [
             "currency": currency,
             "value": amount
@@ -131,10 +130,10 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
            ]
         ]
 
-        let jsonData = try? JSONSerialization.data(withJSONObject: json, options: JSONSerialization.WritingOptions.prettyPrinted)
-        
-        let convertedString = String(data: jsonData!, encoding: String.Encoding.utf8)
-        //print(convertedString ?? "defaultvalue")
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted) else { return }
+                
+        let convertedString = String(data: jsonData, encoding: .utf8)
+
         self.mResult!(convertedString)
 
         return
