@@ -81,7 +81,7 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
             val jsonObject = JSONObject(paymentMethodsPayload?: "")
             val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
             log("paymentMethodsPayloadString $paymentMethodsPayloadString")
-            val googlePayConfig = GooglePayConfiguration.Builder(activity, merchantAccount?: "").build()
+            val googlePayConfig = GooglePayConfiguration.Builder(activity, pubKey?: "").build()
             val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "")
                     .setShowStorePaymentField(showsStorePaymentMethodField)
                     .build()
