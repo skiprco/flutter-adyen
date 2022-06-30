@@ -107,9 +107,13 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     public func didSubmit(_ data: PaymentComponentData, for paymentMethod: PaymentMethod, from component: DropInComponent) {
         //guard let url = URL(string: urlPayments) else { return }
         
+        guard let paymentMethodEncoded = try? JSONEncoder().encode(data.paymentMethod.encodable) else { return }
+        
+        guard let paymentMethod = String(data: paymentMethodEncoded, encoding: .utf8) else { return }
+                        
         // prepare json data
         let json: [String: Any] = [
-           "paymentMethod": data.paymentMethod.encodable,
+           "paymentMethod": paymentMethod,
            "amount": [
             "currency": currency,
             "value": amount
