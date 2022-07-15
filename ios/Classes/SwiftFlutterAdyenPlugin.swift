@@ -164,7 +164,7 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         print("adyen error: \(error.localizedDescription)")
         print("adyen error message: \(error.localizedDescription)")
 //       self.mResult!("CANCELLED")
-       self.mResult!(error)
+       self.mResult!(error.localizedDescription)
        dismissAdyenController()
     }
     
