@@ -164,7 +164,13 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
         print("adyen error: \(error.localizedDescription)")
         print("adyen error message: \(error.localizedDescription)")
 //       self.mResult!("CANCELLED")
-       self.mResult!(error.localizedDescription)
+        let json: [String: Any] = [
+            "error": error.localizedDescription,
+            "errorCode": error.code
+        ]
+        guard let jsonData = try? JSONSerialization.data(withJSONObject: json, options: .prettyPrinted) else { return }
+        self.mResult!(String(data: jsonData, encoding: .utf8))
+    //    self.mResult!(error.localizedDescription)
        dismissAdyenController()
     }
     
