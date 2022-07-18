@@ -188,7 +188,6 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     private func finish(data: Data, component: DropInComponent) {
         let paymentResponseJson = try? JSONSerialization.jsonObject(with: data, options: .allowFragments)
         if let paymentResponseJson = paymentResponseJson as? Dictionary<String,Any> {
-            print("paymentResponseJson: \(paymentResponseJson)")            
             let action = paymentResponseJson["action"]
             if(action != nil) {
                 let act = try? JSONDecoder().decode(Action.self, from: JSONSerialization.data(withJSONObject: action!))
