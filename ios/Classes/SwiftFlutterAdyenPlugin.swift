@@ -161,8 +161,13 @@ extension SwiftFlutterAdyenPlugin: DropInComponentDelegate {
     }
     
     public func didFail(with error: Error, from component: DropInComponent) {
-       self.mResult!("CANCELLED")
-       dismissAdyenController()
+        // if error description contains error 0, return "CLOSED" instead of "CANCELLED"
+        if error.localizedDescription.contains("error 0") {
+            self.mResult!("CLOSED")
+        } else {
+            self.mResult!("CANCELLED")
+        }
+        dismissAdyenController()
     }
     
     fileprivate func dismissAdyenController() {
