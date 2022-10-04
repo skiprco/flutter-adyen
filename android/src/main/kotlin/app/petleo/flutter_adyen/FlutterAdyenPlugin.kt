@@ -3,7 +3,9 @@ package app.petleo.flutter_adyen
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.util.Log
+import androidx.core.os.ConfigurationCompat
 import com.adyen.checkout.bcmc.BcmcConfiguration
 import com.adyen.checkout.card.CardConfiguration
 import com.adyen.checkout.components.model.PaymentMethodsApiResponse
@@ -76,16 +78,17 @@ class FlutterAdyenPlugin(private val activity: Activity) : MethodCallHandler {
 
         val testEnvironment = call.argument<Boolean>("testEnvironment") ?: false
         val showsStorePaymentMethodField = call.argument<Boolean>("showsStorePaymentMethodField") ?: false
-
+        val environment = if (testEnvironment) Environment.TEST else Environment.EUROPE
+        val locale = ConfigurationCompat.getLocales(Resources.getSystem().configuration).get(0)
         try {
             val jsonObject = JSONObject(paymentMethodsPayload?: "")
             val paymentMethodsPayloadString = PaymentMethodsApiResponse.SERIALIZER.deserialize(jsonObject)
             log("paymentMethodsPayloadString $paymentMethodsPayloadString")
-            val googlePayConfig = GooglePayConfiguration.Builder(activity, pubKey?: "").build()
-            val cardConfiguration = CardConfiguration.Builder(activity, pubKey?: "")
-                    .setShowStorePaymentField(showsStorePaymentMethodField)
-                    .build()
-            val bcmcConfiguration = BcmcConfiguration.Builder(activity, pubKey?:"").build()
+            val googlePayConfig = GooglePayConfiguration.Builder(locale, environment, pubKey?: "").build()
+            val cardConfiguration = CardConfiguration.Builder(locale, environment, pubKey?: "")
+                .setShowStorePaymentField(showsStorePaymentMethodField)
+                .build()
+            val bcmcConfiguration = BcmcConfiguration.Builder(locale, environment, pubKey?:"").build()
 
             val resultIntent = Intent(activity, activity::class.java)
             resultIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
